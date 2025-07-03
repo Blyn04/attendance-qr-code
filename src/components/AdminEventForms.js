@@ -60,13 +60,17 @@ const AdminEventForms = () => {
   };
 
   const openFormEditor = (event) => {
+    const defaultDeadline = event.formDeadline
+      ? dayjs(event.formDeadline)
+      : dayjs(`${event.date} ${event.endTime || '23:59'}`);
+
     setEditingEvent(event);
     form.setFieldsValue({
       title: event.title,
       date: dayjs(event.date),
       startTime: dayjs(event.startTime, 'HH:mm'),
       endTime: dayjs(event.endTime, 'HH:mm'),
-      formDeadline: event.formDeadline ? dayjs(event.formDeadline) : null,
+      formDeadline: defaultDeadline
     });
     setEditModalVisible(true);
   };
@@ -80,7 +84,7 @@ const AdminEventForms = () => {
         date: values.date.format('YYYY-MM-DD'),
         startTime: values.startTime.format('HH:mm'),
         endTime: values.endTime.format('HH:mm'),
-        formDeadline: values.formDeadline ? values.formDeadline.toISOString() : null,
+        formDeadline: values.formDeadline.toISOString(),
       });
       message.success('Event updated successfully!');
       setEditModalVisible(false);
@@ -98,18 +102,28 @@ const AdminEventForms = () => {
         {events.map(event => (
           <Col key={event.id} span={12}>
             <Card title={event.title} bordered={true}>
-              <p><strong>Date:</strong> {event.date}</p>
-              <p><strong>Time:</strong> {event.startTime} - {event.endTime}</p>
+            <p><strong>Date:</strong> {event.date}</p>
+            <p><strong>Time:</strong> {event.startTime} - {event.endTime}</p>
 
-              {event.formTemplate ? (
+            {event.formDeadline && (
+                <p><strong>Form Closes At:</strong> {dayjs(event.formDeadline).format('YYYY-MM-DD HH:mm')}</p>
+            )}
+
+            {event.formTemplate ? (
                 <>
-                  <Button type="primary" onClick={() => navigate(`/form/${event.id}`)}>View Form</Button>{' '}
-                  <Button onClick={() => copyLink(event.id)}>Copy Form Link</Button>{' '}
-                  <Button onClick={() => openFormEditor(event)}>Edit Form</Button>
+                <a
+                href={`/form/${event.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                >
+                <Button type="primary">View Form</Button>
+                </a>{' '}
+                <Button onClick={() => copyLink(event.id)}>Copy Form Link</Button>{' '}
+                <Button onClick={() => openFormEditor(event)}>Edit Form</Button>
                 </>
-              ) : (
+            ) : (
                 <p style={{ color: 'red' }}>No form template found</p>
-              )}
+            )}
             </Card>
           </Col>
         ))}
@@ -123,11 +137,33 @@ const AdminEventForms = () => {
         okText="Save Changes"
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="Event Title" name="title" rules={[{ required: true }]}> <Input /> </Form.Item>
-          <Form.Item label="Date" name="date" rules={[{ required: true }]}> <DatePicker style={{ width: '100%' }} /> </Form.Item>
-          <Form.Item label="Start Time" name="startTime" rules={[{ required: true }]}> <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} /> </Form.Item>
-          <Form.Item label="End Time" name="endTime" rules={[{ required: true }]}> <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} /> </Form.Item>
-          <Form.Item label="Form Closes At" name="formDeadline"> <DatePicker showTime format="YYYY-MM-DD HH:mm" style={{ width: '100%' }} /> </Form.Item>
+          <Form.Item label="Event Title" name="title" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+
+          <Form.Item label="Date" name="date" rules={[{ required: true }]}>
+            <DatePicker style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item label="Start Time" name="startTime" rules={[{ required: true }]}>
+            <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} />
+          </Form.Item>
+
+          <Form.Item label="End Time" name="endTime" rules={[{ required: true }]}>
+            <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} />
+          </Form.Item>
+
+          <Form.Item
+            label="Form Closes At"
+            name="formDeadline"
+            rules={[{ required: true, message: 'Please set the form closing time' }]}
+          >
+            <DatePicker
+              showTime
+              format="YYYY-MM-DD HH:mm"
+              style={{ width: '100%' }}
+            />
+          </Form.Item>
         </Form>
       </Modal>
     </div>
