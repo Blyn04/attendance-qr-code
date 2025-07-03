@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Col, Row, Tabs } from 'antd';
 import {
   FileOutlined,
@@ -6,42 +6,36 @@ import {
   AppstoreOutlined,
   ProfileOutlined
 } from '@ant-design/icons';
-import CustomDashboardCalendar from '../customs/CustomDashboardCalendar'; 
+import CustomDashboardCalendar from '../customs/CustomDashboardCalendar';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../config/FirebaseConfig';
 
 const { TabPane } = Tabs;
 
 const Dashboard = () => {
+  const [eventCount, setEventCount] = useState(0);
+
+  useEffect(() => {
+    const fetchEventCount = async () => {
+      const snapshot = await getDocs(collection(db, 'events'));
+      setEventCount(snapshot.size);
+    };
+
+    fetchEventCount();
+  }, []);
+
   return (
     <div>
       <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={6}>
-          <Card bordered style={{ background: '#E4F0F5' }}>
-            <FileOutlined style={{ fontSize: 28 }} />
-            <h2>3</h2>
-            <p>Pending Requests</p>
-          </Card>
-        </Col>
+
         <Col span={6}>
           <Card bordered style={{ background: '#D6F5E3' }}>
             <ShoppingOutlined style={{ fontSize: 28 }} />
-            <h2>95</h2>
-            <p>Borrow Catalog</p>
+            <h2>{eventCount}</h2>
+            <p>Total Events</p>
           </Card>
         </Col>
-        <Col span={6}>
-          <Card bordered style={{ background: '#C7E5F9' }}>
-            <AppstoreOutlined style={{ fontSize: 28 }} />
-            <h2>54</h2>
-            <p>Inventory</p>
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card bordered style={{ background: '#FBE1E4' }}>
-            <ProfileOutlined style={{ fontSize: 28 }} />
-            <h2>127</h2>
-            <p>Request Log</p>
-          </Card>
-        </Col>
+
       </Row>
 
       <Tabs defaultActiveKey="calendar">

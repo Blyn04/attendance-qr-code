@@ -1,4 +1,3 @@
-// LayoutMain.js
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -11,8 +10,9 @@ import { Layout, Menu, theme } from 'antd';
 import AdminEvents from './AdminEvents';
 import AdminEventForms from './AdminEventForms';
 import Dashboard from './Dashboard';
+import CustomHeader from '../customs/CustomHeader';
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Content, Footer, Sider } = Layout;
 
 const items = [
   {
@@ -50,40 +50,29 @@ const LayoutMain = () => {
     if (location.pathname.startsWith('/form')) return '1';
     if (location.pathname.startsWith('/admin/manage-forms')) return '4';
     if (location.pathname.startsWith('/events')) return '2';
-    return '0'; 
+    return '0';
   };
 
   const selectedKey = getSelectedKey();
+  const currentTitle = items.find(item => item.key === selectedKey)?.label || 'Dashboard';
 
   const handleMenuClick = (e) => {
     if (e.key === '0') {
       navigate('/');
-      
     } else if (e.key === '2') {
       navigate('/events');
-
     } else if (e.key === '4') {
       navigate('/admin/manage-forms');
-
     } else if (e.key === '3') {
       console.log('Logging out...');
     }
   };
 
   const renderContent = () => {
-    if (selectedKey === '0') {
-      return <Dashboard />;
-
-    } else if (selectedKey === '2') {
-      return <AdminEvents />;
-
-    } else if (selectedKey === '4') {
-      return <AdminEventForms />;
-
-    } else if (selectedKey === '3') {
-      return <div>Signing out...</div>;
-    }
-    
+    if (selectedKey === '0') return <Dashboard />;
+    if (selectedKey === '2') return <AdminEvents />;
+    if (selectedKey === '4') return <AdminEventForms />;
+    if (selectedKey === '3') return <div>Signing out...</div>;
     return <div>Select a menu item</div>;
   };
 
@@ -101,7 +90,8 @@ const LayoutMain = () => {
       </Sider>
 
       <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }} />
+        <CustomHeader title={currentTitle} />
+
         <Content style={{ margin: '24px 16px 0' }}>
           <div
             style={{
@@ -114,6 +104,7 @@ const LayoutMain = () => {
             {renderContent()}
           </div>
         </Content>
+
         <Footer style={{ textAlign: 'center' }}>
           Created by Blyn
         </Footer>
