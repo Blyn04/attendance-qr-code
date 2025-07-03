@@ -1,4 +1,3 @@
-// src/components/AdminEventForms.js
 import React, { useEffect, useState } from 'react';
 import { db } from '../config/FirebaseConfig';
 import {
@@ -67,6 +66,7 @@ const AdminEventForms = () => {
     setEditingEvent(event);
     form.setFieldsValue({
       title: event.title,
+      room: event.room || '',
       date: dayjs(event.date),
       startTime: dayjs(event.startTime, 'HH:mm'),
       endTime: dayjs(event.endTime, 'HH:mm'),
@@ -81,6 +81,7 @@ const AdminEventForms = () => {
       const eventRef = doc(db, 'events', editingEvent.id);
       await updateDoc(eventRef, {
         title: values.title,
+        room: values.room,
         date: values.date.format('YYYY-MM-DD'),
         startTime: values.startTime.format('HH:mm'),
         endTime: values.endTime.format('HH:mm'),
@@ -102,28 +103,29 @@ const AdminEventForms = () => {
         {events.map(event => (
           <Col key={event.id} span={12}>
             <Card title={event.title} bordered={true}>
-            <p><strong>Date:</strong> {event.date}</p>
-            <p><strong>Time:</strong> {event.startTime} - {event.endTime}</p>
+              <p><strong>Date:</strong> {event.date}</p>
+              <p><strong>Time:</strong> {event.startTime} - {event.endTime}</p>
+              <p><strong>Room:</strong> {event.room || 'TBD'}</p>
 
-            {event.formDeadline && (
+              {event.formDeadline && (
                 <p><strong>Form Closes At:</strong> {dayjs(event.formDeadline).format('YYYY-MM-DD HH:mm')}</p>
-            )}
+              )}
 
-            {event.formTemplate ? (
+              {event.formTemplate ? (
                 <>
-                <a
-                href={`/form/${event.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                >
-                <Button type="primary">View Form</Button>
-                </a>{' '}
-                <Button onClick={() => copyLink(event.id)}>Copy Form Link</Button>{' '}
-                <Button onClick={() => openFormEditor(event)}>Edit Form</Button>
+                  <a
+                    href={`/form/${event.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button type="primary">View Form</Button>
+                  </a>{' '}
+                  <Button onClick={() => copyLink(event.id)}>Copy Form Link</Button>{' '}
+                  <Button onClick={() => openFormEditor(event)}>Edit Form</Button>
                 </>
-            ) : (
+              ) : (
                 <p style={{ color: 'red' }}>No form template found</p>
-            )}
+              )}
             </Card>
           </Col>
         ))}
@@ -138,6 +140,10 @@ const AdminEventForms = () => {
       >
         <Form form={form} layout="vertical">
           <Form.Item label="Event Title" name="title" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+
+          <Form.Item label="Room / Venue" name="room" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
 

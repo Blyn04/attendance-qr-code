@@ -7,12 +7,13 @@ import {
   Input, TimePicker, message, Form, Tabs
 } from 'antd';
 import dayjs from 'dayjs';
-import CustomCalendar from '../customs/CustomCalendar'; // Your calendar component
+import CustomCalendar from '../customs/CustomCalendar';
 
 const AdminEvents = () => {
   const [events, setEvents] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [title, setTitle] = useState('');
+  const [room, setRoom] = useState('');
   const [date, setDate] = useState(null);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
@@ -24,16 +25,19 @@ const AdminEvents = () => {
     setEvents(list);
   };
 
-  useEffect(() => { fetchEvents(); }, []);
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
   const handleSubmit = async () => {
-    if (!title || !date || !startTime || !endTime) {
+    if (!title || !room || !date || !startTime || !endTime) {
       return message.error('Please fill in all fields.');
     }
 
     try {
       const docRef = await addDoc(collection(db, 'events'), {
         title,
+        room,
         date: dayjs(date).format('YYYY-MM-DD'),
         startTime: dayjs(startTime).format('HH:mm'),
         endTime: dayjs(endTime).format('HH:mm'),
@@ -56,6 +60,7 @@ const AdminEvents = () => {
       message.success('Event and form template created!');
       setModalOpen(false);
       setTitle('');
+      setRoom('');
       setDate(null);
       setStartTime(null);
       setEndTime(null);
@@ -91,6 +96,10 @@ const AdminEvents = () => {
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </Form.Item>
 
+          <Form.Item label="Venue / Room" required>
+            <Input value={room} onChange={(e) => setRoom(e.target.value)} />
+          </Form.Item>
+
           <Form.Item label="Date" required>
             <CustomCalendar date={date} setDate={setDate} />
           </Form.Item>
@@ -120,6 +129,7 @@ const AdminEvents = () => {
               label: 'Details',
               children: (
                 <div>
+                  <p><strong>Room:</strong> {selectedEvent?.room || 'TBD'}</p>
                   <p><strong>Date:</strong> {selectedEvent?.date}</p>
                   <p><strong>Time:</strong> {selectedEvent?.startTime} - {selectedEvent?.endTime}</p>
                 </div>
@@ -155,12 +165,10 @@ const AdminEvents = () => {
                 </Avatar>
                 <div style={{ marginLeft: 12 }}>
                   <h3>{event.title}</h3>
-                  <p>Room: TBD</p>
+                  <p><strong>Room:</strong> {event.room || 'TBD'}</p>
                 </div>
-
                 <Tag color="red">Date: {event.date}</Tag>
               </div>
-              
               <p><strong>Time:</strong> {event.startTime} – {event.endTime}</p>
               <p>
                 <Button size="small" href={`/form/${event.id}`} target="_blank" onClick={(e) => e.stopPropagation()}>
