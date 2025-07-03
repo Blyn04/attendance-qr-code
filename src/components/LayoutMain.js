@@ -10,14 +10,15 @@ import {
 import { Layout, Menu, theme } from 'antd';
 import AdminEvents from './AdminEvents';
 import AdminEventForms from './AdminEventForms';
+import Dashboard from './Dashboard';
 
 const { Header, Content, Footer, Sider } = Layout;
 
 const items = [
   {
-    key: '1',
+    key: '0',
     icon: React.createElement(FormOutlined),
-    label: 'Registration Form',
+    label: 'Dashboard',
   },
   {
     key: '2',
@@ -44,44 +45,45 @@ const LayoutMain = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
-  // Determine selected key based on current path
   const getSelectedKey = () => {
+    if (location.pathname === '/' || location.pathname === '/dashboard') return '0';
     if (location.pathname.startsWith('/form')) return '1';
     if (location.pathname.startsWith('/admin/manage-forms')) return '4';
     if (location.pathname.startsWith('/events')) return '2';
-    return '2'; // default to Events
+    return '0'; 
   };
 
   const selectedKey = getSelectedKey();
 
   const handleMenuClick = (e) => {
-    if (e.key === '1') {
-      navigate('/form/sample-event-id'); 
-
+    if (e.key === '0') {
+      navigate('/');
+      
     } else if (e.key === '2') {
       navigate('/events');
 
     } else if (e.key === '4') {
       navigate('/admin/manage-forms');
-      
+
     } else if (e.key === '3') {
       console.log('Logging out...');
     }
   };
 
   const renderContent = () => {
-    if (selectedKey === '1') {
-      return <div>Registration Form (Coming Soon)</div>; // or use a placeholder
+    if (selectedKey === '0') {
+      return <Dashboard />;
 
     } else if (selectedKey === '2') {
       return <AdminEvents />;
 
     } else if (selectedKey === '4') {
-      return <AdminEventForms />;  
+      return <AdminEventForms />;
 
     } else if (selectedKey === '3') {
       return <div>Signing out...</div>;
     }
+    
     return <div>Select a menu item</div>;
   };
 

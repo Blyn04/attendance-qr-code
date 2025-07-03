@@ -60,6 +60,7 @@ const AdminEvents = () => {
       setStartTime(null);
       setEndTime(null);
       fetchEvents();
+
     } catch (err) {
       console.error(err);
       message.error('Failed to add event and form.');
@@ -89,12 +90,15 @@ const AdminEvents = () => {
           <Form.Item label="Event Title" required>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </Form.Item>
+
           <Form.Item label="Date" required>
             <CustomCalendar date={date} setDate={setDate} />
           </Form.Item>
+
           <Form.Item label="Start Time" required>
             <TimePicker style={{ width: '100%' }} value={startTime} onChange={setStartTime} format="HH:mm" minuteStep={5} />
           </Form.Item>
+
           <Form.Item label="End Time" required>
             <TimePicker style={{ width: '100%' }} value={endTime} onChange={setEndTime} format="HH:mm" minuteStep={5} />
           </Form.Item>
@@ -153,8 +157,10 @@ const AdminEvents = () => {
                   <h3>{event.title}</h3>
                   <p>Room: TBD</p>
                 </div>
+
                 <Tag color="red">Date: {event.date}</Tag>
               </div>
+              
               <p><strong>Time:</strong> {event.startTime} – {event.endTime}</p>
               <p>
                 <Button size="small" href={`/form/${event.id}`} target="_blank" onClick={(e) => e.stopPropagation()}>
