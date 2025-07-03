@@ -1,29 +1,22 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LayoutMain from './components/LayoutMain';
+import RegistrationForm from './components/RegistrationForm';
+import AdminEventForms from './components/AdminEventForms';
 
 function App() {
   return (
-    // <div className="App">
-    //   <header className="App-header">
-    //     <img src={logo} className="App-logo" alt="logo" />
-    //     <p>
-    //       Edit <code>src/App.js</code> and save to reload.
-    //     </p>
-    //     <a
-    //       className="App-link"
-    //       href="https://reactjs.org"
-    //       target="_blank"
-    //       rel="noopener noreferrer"
-    //     >
-    //       Learn React
-    //     </a>
-    //   </header>
-    // </div>
+    <BrowserRouter>
+      <Routes>
+        {/* Wrap all layout-based pages inside LayoutMain */}
+        <Route path="/" element={<LayoutMain />}>
+          <Route path="events" element={<div />} /> {/* Placeholder, real content comes from LayoutMain */}
+          <Route path="admin/manage-forms" element={<AdminEventForms />} />
+        </Route>
 
-    <>
-    <LayoutMain/>
-    </>
+        {/* Pages without layout (e.g., public registration form) */}
+        <Route path="/form/:eventId" element={<RegistrationForm />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

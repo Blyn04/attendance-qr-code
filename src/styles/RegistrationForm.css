@@ -54,3 +54,11 @@ button {
 button:hover {
   background-color: #0056b3;
 }
+
+.event-info-box {
+  background-color: #f0f5ff;
+  padding: 12px;
+  margin-bottom: 16px;
+  border-left: 4px solid #1890ff;
+  border-radius: 4px;
+}
