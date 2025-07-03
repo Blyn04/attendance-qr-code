@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './styles/Form.css';
+import '../styles/Form.css';
 
 function Form() {
   const [hasAgreed, setHasAgreed] = useState(false);

@@ -1,0 +1,103 @@
+/* AdminEvents.css */
+
+.styled-event-card {
+  border: 1px solid #dcd0ff;
+  border-radius: 10px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(220, 208, 255, 0.1);
+}
+
+.styled-event-card:hover {
+  box-shadow: 0 4px 12px rgba(156, 111, 255, 0.2);
+}
+
+.event-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.event-title-meta {
+  flex: 1;
+  margin-left: 12px;
+}
+
+.event-title-meta h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.event-meta {
+  color: #999;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.date-badge {
+  font-weight: bold;
+  border-radius: 5px;
+}
+
+.event-description p {
+  margin: 4px 0;
+}
+
+/* Force the DatePicker popup to display year and month clearly */
+.custom-datepicker-popup .ant-picker-header-view {
+  flex-direction: row !important;
+  gap: 8px;
+  justify-content: center;
+}
+
+.custom-datepicker-popup .ant-picker-header-view button {
+  font-weight: 500;
+  font-size: 14px;
+  color: #000;
+  text-transform: capitalize;
+}
+
+/* Optional: widen the calendar dropdown */
+.custom-datepicker-popup {
+  min-width: 300px;
+}
+
+/* Force DatePicker header to be more readable */
+.custom-datepicker-popup .ant-picker-header-view {
+  flex-direction: row !important;
+  justify-content: center;
+  column-gap: 8px;
+}
+
+/* Make popup wider so year fits */
+.custom-datepicker-popup {
+  width: 350px !important;
+  min-width: 350px !important;
+}
+
+/* Force proper width for the calendar dropdown */
+.datepicker-popup {
+  width: 300px !important;
+  min-width: 300px !important;
+}
+
+/* Fix the header layout so year/month is visible */
+.datepicker-popup .ant-picker-header-view {
+  justify-content: center;
+  column-gap: 12px;
+  font-size: 14px;
+}
+
+/* FIX for AntD DatePicker header view hidden by reset.css */
+.ant-picker-header-view {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.85);
+  padding: 0 8px;
+}
