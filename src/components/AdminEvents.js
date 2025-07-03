@@ -4,7 +4,7 @@ import { db } from '../config/FirebaseConfig';
 import { collection, addDoc, getDocs, doc, setDoc } from 'firebase/firestore';
 import {
   Card, Row, Col, Tag, Avatar, Modal, Button,
-  Input, TimePicker, message, Form
+  Input, TimePicker, message, Form, Tabs
 } from 'antd';
 import dayjs from 'dayjs';
 import CustomCalendar from '../customs/CustomCalendar'; // Your calendar component
@@ -16,6 +16,7 @@ const AdminEvents = () => {
   const [date, setDate] = useState(null);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const fetchEvents = async () => {
     const snapshot = await getDocs(collection(db, 'events'));
@@ -25,46 +26,49 @@ const AdminEvents = () => {
 
   useEffect(() => { fetchEvents(); }, []);
 
-const handleSubmit = async () => {
-  if (!title || !date || !startTime || !endTime) {
-    return message.error('Please fill in all fields.');
-  }
+  const handleSubmit = async () => {
+    if (!title || !date || !startTime || !endTime) {
+      return message.error('Please fill in all fields.');
+    }
 
-  try {
-    const docRef = await addDoc(collection(db, 'events'), {
-      title,
-      date: dayjs(date).format('YYYY-MM-DD'),
-      startTime: dayjs(startTime).format('HH:mm'),
-      endTime: dayjs(endTime).format('HH:mm'),
-    });
+    try {
+      const docRef = await addDoc(collection(db, 'events'), {
+        title,
+        date: dayjs(date).format('YYYY-MM-DD'),
+        startTime: dayjs(startTime).format('HH:mm'),
+        endTime: dayjs(endTime).format('HH:mm'),
+      });
 
-    // 🟢 Add a default form template under /events/{eventId}/form/template
-    const defaultForm = {
-      questions: [
-        { type: 'text', label: 'Full Name', required: true },
-        { type: 'email', label: 'Email', required: true },
-        { type: 'text', label: 'Year', required: true },
-        { type: 'text', label: 'Section (Format: INF###)', required: true },
-        { type: 'checkbox', label: 'Photo Consent' },
-        { type: 'checkbox', label: 'Video Consent' },
-        { type: 'checkbox', label: 'Agree to Data Privacy Policy', required: true }
-      ]
-    };
+      const defaultForm = {
+        questions: [
+          { type: 'text', label: 'Full Name', required: true },
+          { type: 'email', label: 'Email', required: true },
+          { type: 'text', label: 'Year', required: true },
+          { type: 'text', label: 'Section (Format: INF###)', required: true },
+          { type: 'checkbox', label: 'Photo Consent' },
+          { type: 'checkbox', label: 'Video Consent' },
+          { type: 'checkbox', label: 'Agree to Data Privacy Policy', required: true }
+        ]
+      };
 
-    await setDoc(doc(db, 'events', docRef.id, 'form', 'template'), defaultForm);
+      await setDoc(doc(db, 'events', docRef.id, 'form', 'template'), defaultForm);
 
-    message.success('Event and form template created!');
-    setModalOpen(false);
-    setTitle('');
-    setDate(null);
-    setStartTime(null);
-    setEndTime(null);
-    fetchEvents();
-  } catch (err) {
-    console.error(err);
-    message.error('Failed to add event and form.');
-  }
-};
+      message.success('Event and form template created!');
+      setModalOpen(false);
+      setTitle('');
+      setDate(null);
+      setStartTime(null);
+      setEndTime(null);
+      fetchEvents();
+    } catch (err) {
+      console.error(err);
+      message.error('Failed to add event and form.');
+    }
+  };
+
+  const handleCardClick = (event) => {
+    setSelectedEvent(event);
+  };
 
   return (
     <div style={{ padding: '0 24px' }}>
@@ -97,11 +101,50 @@ const handleSubmit = async () => {
         </Form>
       </Modal>
 
+      <Modal
+        open={!!selectedEvent}
+        title={`Details for ${selectedEvent?.title}`}
+        onCancel={() => setSelectedEvent(null)}
+        footer={null}
+        width={800}
+      >
+        <Tabs
+          defaultActiveKey="1"
+          items={[
+            {
+              key: '1',
+              label: 'Details',
+              children: (
+                <div>
+                  <p><strong>Date:</strong> {selectedEvent?.date}</p>
+                  <p><strong>Time:</strong> {selectedEvent?.startTime} - {selectedEvent?.endTime}</p>
+                </div>
+              ),
+            },
+            {
+              key: '2',
+              label: 'Registrations',
+              children: <div>📋 Registrations list goes here</div>,
+            },
+            {
+              key: '3',
+              label: 'Attendance',
+              children: <div>📌 Attendance tracker goes here</div>,
+            },
+            {
+              key: '4',
+              label: 'Analytics',
+              children: <div>📊 Analytics will be shown here</div>,
+            },
+          ]}
+        />
+      </Modal>
+
       <h3>Upcoming Events</h3>
       <Row gutter={[16, 16]}>
         {events.map(event => (
           <Col xs={24} sm={24} md={12} lg={12} key={event.id}>
-            <Card bordered={false}>
+            <Card bordered={false} hoverable onClick={() => handleCardClick(event)}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Avatar shape="square" size="large" style={{ backgroundColor: '#f5a623' }}>
                   {event.title.slice(0, 2).toUpperCase()}
@@ -114,7 +157,9 @@ const handleSubmit = async () => {
               </div>
               <p><strong>Time:</strong> {event.startTime} – {event.endTime}</p>
               <p>
-                <Button size="small" href={`/form/${event.id}`} target="_blank">Copy Link</Button>
+                <Button size="small" href={`/form/${event.id}`} target="_blank" onClick={(e) => e.stopPropagation()}>
+                  Copy Link
+                </Button>
               </p>
             </Card>
           </Col>
