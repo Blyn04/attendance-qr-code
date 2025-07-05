@@ -21,6 +21,7 @@ import {
 } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
+import '../styles/AdminEventForms.css';
 
 const AdminEventForms = () => {
   const [events, setEvents] = useState([]);
@@ -97,34 +98,30 @@ const AdminEventForms = () => {
   };
 
   return (
-    <div>
-      <h2>Manage Event Forms</h2>
-      <Row gutter={[16, 16]}>
+    <div className="admin-container">
+      <h1 className="admin-title">📋 Manage Event Forms</h1>
+
+      <Row gutter={[24, 24]}>
         {events.map(event => (
-          <Col key={event.id} span={12}>
-            <Card title={event.title} bordered={true}>
+          <Col key={event.id} xs={24} sm={12} md={12} lg={8}>
+            <Card className="event-card" title={event.title} bordered hoverable>
               <p><strong>Date:</strong> {event.date}</p>
               <p><strong>Time:</strong> {event.startTime} - {event.endTime}</p>
               <p><strong>Room:</strong> {event.room || 'TBD'}</p>
-
               {event.formDeadline && (
-                <p><strong>Form Closes At:</strong> {dayjs(event.formDeadline).format('YYYY-MM-DD HH:mm')}</p>
+                <p><strong>Form Closes:</strong> {dayjs(event.formDeadline).format('YYYY-MM-DD HH:mm')}</p>
               )}
 
               {event.formTemplate ? (
-                <>
-                  <a
-                    href={`/form/${event.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                <div className="button-group">
+                  <a href={`/form/${event.id}`} target="_blank" rel="noopener noreferrer">
                     <Button type="primary">View Form</Button>
-                  </a>{' '}
-                  <Button onClick={() => copyLink(event.id)}>Copy Form Link</Button>{' '}
-                  <Button onClick={() => openFormEditor(event)}>Edit Form</Button>
-                </>
+                  </a>
+                  <Button onClick={() => copyLink(event.id)}>Copy Link</Button>
+                  <Button onClick={() => openFormEditor(event)} type="dashed">Edit</Button>
+                </div>
               ) : (
-                <p style={{ color: 'red' }}>No form template found</p>
+                <p className="no-form-warning">⚠ No form template found</p>
               )}
             </Card>
           </Col>
@@ -142,23 +139,18 @@ const AdminEventForms = () => {
           <Form.Item label="Event Title" name="title" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-
           <Form.Item label="Room / Venue" name="room" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-
           <Form.Item label="Date" name="date" rules={[{ required: true }]}>
             <DatePicker style={{ width: '100%' }} />
           </Form.Item>
-
           <Form.Item label="Start Time" name="startTime" rules={[{ required: true }]}>
             <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} />
           </Form.Item>
-
           <Form.Item label="End Time" name="endTime" rules={[{ required: true }]}>
             <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} />
           </Form.Item>
-
           <Form.Item
             label="Form Closes At"
             name="formDeadline"

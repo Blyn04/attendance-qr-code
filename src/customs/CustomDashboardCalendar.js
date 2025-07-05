@@ -41,7 +41,7 @@ const CustomDashboardCalendar = () => {
     const listData = eventsByDate[dateKey] || [];
 
     return (
-      <ul className="events">
+      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         {listData.map((item, idx) => (
           <li key={idx}>
             <Badge status={item.type} text={item.title} />

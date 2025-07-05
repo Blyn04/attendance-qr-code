@@ -1,4 +1,3 @@
-// src/pages/AdminEvents.js
 import React, { useState, useEffect } from 'react';
 import { db } from '../config/FirebaseConfig';
 import { collection, addDoc, getDocs, doc, setDoc } from 'firebase/firestore';
@@ -8,6 +7,7 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import CustomCalendar from '../customs/CustomCalendar';
+import '../styles/AdminEvents.css';
 
 const AdminEvents = () => {
   const [events, setEvents] = useState([]);
@@ -65,7 +65,6 @@ const AdminEvents = () => {
       setStartTime(null);
       setEndTime(null);
       fetchEvents();
-
     } catch (err) {
       console.error(err);
       message.error('Failed to add event and form.');
@@ -77,8 +76,8 @@ const AdminEvents = () => {
   };
 
   return (
-    <div style={{ padding: '0 24px' }}>
-      <Button type="primary" onClick={() => setModalOpen(true)} style={{ marginBottom: 24 }}>
+    <div className="admin-container">
+      <Button type="primary" onClick={() => setModalOpen(true)} className="add-event-btn">
         Add New Event
       </Button>
 
@@ -158,23 +157,35 @@ const AdminEvents = () => {
       <Row gutter={[16, 16]}>
         {events.map(event => (
           <Col xs={24} sm={24} md={12} lg={12} key={event.id}>
-            <Card bordered={false} hoverable onClick={() => handleCardClick(event)}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Card
+              className="styled-event-card"
+              bordered={false}
+              hoverable
+              onClick={() => handleCardClick(event)}
+            >
+              <div className="event-card-header">
                 <Avatar shape="square" size="large" style={{ backgroundColor: '#f5a623' }}>
                   {event.title.slice(0, 2).toUpperCase()}
                 </Avatar>
-                <div style={{ marginLeft: 12 }}>
+                <div className="event-title-meta">
                   <h3>{event.title}</h3>
-                  <p><strong>Room:</strong> {event.room || 'TBD'}</p>
+                  <p className="event-meta"><strong>Room:</strong> {event.room || 'TBD'}</p>
                 </div>
-                <Tag color="red">Date: {event.date}</Tag>
+                <Tag className="date-badge" color="red">Date: {event.date}</Tag>
               </div>
-              <p><strong>Time:</strong> {event.startTime} – {event.endTime}</p>
-              <p>
-                <Button size="small" href={`/form/${event.id}`} target="_blank" onClick={(e) => e.stopPropagation()}>
-                  Copy Link
-                </Button>
-              </p>
+              <div className="event-description">
+                <p><strong>Time:</strong> {event.startTime} – {event.endTime}</p>
+                <p>
+                  <Button
+                    size="small"
+                    href={`/form/${event.id}`}
+                    target="_blank"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Copy Link
+                  </Button>
+                </p>
+              </div>
             </Card>
           </Col>
         ))}

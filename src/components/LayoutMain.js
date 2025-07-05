@@ -11,6 +11,8 @@ import AdminEvents from './AdminEvents';
 import AdminEventForms from './AdminEventForms';
 import Dashboard from './Dashboard';
 import CustomHeader from '../customs/CustomHeader';
+import jpcsLogo from '../assets/jpcs.png'; 
+import '../styles/LayoutMain.css'; 
 
 const { Content, Footer, Sider } = Layout;
 
@@ -79,7 +81,11 @@ const LayoutMain = () => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider breakpoint="lg" collapsedWidth="0">
-        <div className="demo-logo-vertical" />
+        {/* ✅ Logo container */}
+        <div className="sidebar-logo">
+          <img src={jpcsLogo} alt="JPCS Logo" />
+        </div>
+
         <Menu
           theme="dark"
           mode="inline"

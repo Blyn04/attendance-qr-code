@@ -1,0 +1,101 @@
+/* Container for the entire admin page */
+.admin-container {
+  padding: 24px;
+  background-color: #f9f9fb;
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Add Event button */
+.add-event-btn {
+  margin-bottom: 24px;
+}
+
+/* Card style for events */
+.styled-event-card {
+  border: 1px solid #e6e6f0;
+  border-radius: 12px;
+  padding: 16px;
+  transition: box-shadow 0.3s ease;
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.styled-event-card:hover {
+  box-shadow: 0 6px 14px rgba(88, 61, 255, 0.15);
+}
+
+/* Header inside the event card */
+.event-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+/* Text and room info beside the avatar */
+.event-title-meta {
+  flex: 1;
+  margin-left: 12px;
+}
+
+.event-title-meta h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.event-meta {
+  color: #888;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* Badge for event date */
+.date-badge {
+  font-weight: bold;
+  font-size: 13px;
+  background-color: #ffeef0;
+  color: #c41d7f;
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+/* Card body text styling */
+.event-description p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #444;
+}
+
+/* Ant Design Modal overrides for consistency */
+.ant-modal-title {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.ant-modal-footer .ant-btn-primary {
+  background-color: #4c51bf;
+  border-color: #4c51bf;
+}
+
+.ant-modal-footer .ant-btn-primary:hover {
+  background-color: #434190;
+  border-color: #434190;
+}
+
+/* Optional: Wider date picker panel styling */
+.custom-datepicker-popup {
+  width: 350px !important;
+  min-width: 350px !important;
+}
+
+.custom-datepicker-popup .ant-picker-header-view {
+  flex-direction: row !important;
+  justify-content: center;
+  column-gap: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #000;
+}
