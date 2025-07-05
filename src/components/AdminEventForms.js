@@ -5,7 +5,8 @@ import {
   getDocs,
   getDoc,
   doc,
-  updateDoc
+  updateDoc,
+  setDoc // added setDoc
 } from 'firebase/firestore';
 import {
   Button,
@@ -17,11 +18,16 @@ import {
   Form,
   Input,
   TimePicker,
-  DatePicker
+  DatePicker,
+  Space,
+  Select
 } from 'antd';
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import '../styles/AdminEventForms.css';
+
+const { Option } = Select;
 
 const AdminEventForms = () => {
   const [events, setEvents] = useState([]);
@@ -71,7 +77,8 @@ const AdminEventForms = () => {
       date: dayjs(event.date),
       startTime: dayjs(event.startTime, 'HH:mm'),
       endTime: dayjs(event.endTime, 'HH:mm'),
-      formDeadline: defaultDeadline
+      formDeadline: defaultDeadline,
+      customQuestions: event.formTemplate?.customQuestions || [],
     });
     setEditModalVisible(true);
   };
@@ -80,6 +87,9 @@ const AdminEventForms = () => {
     try {
       const values = await form.validateFields();
       const eventRef = doc(db, 'events', editingEvent.id);
+      const formTemplateRef = doc(db, 'events', editingEvent.id, 'form', 'template');
+
+      // Update event main info
       await updateDoc(eventRef, {
         title: values.title,
         room: values.room,
@@ -88,6 +98,12 @@ const AdminEventForms = () => {
         endTime: values.endTime.format('HH:mm'),
         formDeadline: values.formDeadline.toISOString(),
       });
+
+      // Save custom questions to form/template
+      await setDoc(formTemplateRef, {
+        customQuestions: values.customQuestions || [],
+      }, { merge: true });
+
       message.success('Event updated successfully!');
       setEditModalVisible(false);
       fetchEvents();
@@ -162,6 +178,49 @@ const AdminEventForms = () => {
               style={{ width: '100%' }}
             />
           </Form.Item>
+
+          {/* 🔽 Custom Questions Section */}
+          <Form.List name="customQuestions">
+            {(fields, { add, remove }) => (
+              <>
+                <label>📝 Custom Questions (for registration form)</label>
+                  {fields.map(({ key, name, ...restField }) => (
+                    <Space key={key} direction="vertical" style={{ display: 'block', marginBottom: 8 }}>
+                      <Form.Item
+                        {...restField}
+                        name={[name, 'label']}
+                        label={`Question ${name + 1}`}
+                        rules={[{ required: true, message: 'Please input the question text' }]}
+                      >
+                        <Input placeholder="e.g. What's your full name?" />
+                      </Form.Item>
+
+                      <Form.Item
+                        {...restField}
+                        name={[name, 'type']}
+                        label="Input Type"
+                        rules={[{ required: true, message: 'Please select an input type' }]}
+                      >
+                        <Select placeholder="Select input type">
+                          <Option value="text">Text</Option>
+                          <Option value="email">Email</Option>
+                          <Option value="number">Number</Option>
+                          <Option value="checkbox">Checkbox</Option>
+                        </Select>
+                      </Form.Item>
+
+                      <Button danger type="link" onClick={() => remove(name)}>Remove</Button>
+                      <hr />
+                    </Space>
+                  ))}
+                <Form.Item>
+                  <Button type="dashed" onClick={() => add()} block>
+                    + Add Question
+                  </Button>
+                </Form.Item>
+              </>
+            )}
+          </Form.List>
         </Form>
       </Modal>
     </div>
