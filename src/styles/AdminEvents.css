@@ -101,3 +101,10 @@
   color: rgba(0, 0, 0, 0.85);
   padding: 0 8px;
 }
+
+.ant-input-search-button {
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}

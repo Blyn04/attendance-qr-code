@@ -18,6 +18,7 @@ const AdminEvents = () => {
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [searchText, setSearchText] = useState('');
 
   const fetchEvents = async () => {
     const snapshot = await getDocs(collection(db, 'events'));
@@ -80,6 +81,17 @@ const AdminEvents = () => {
       <Button type="primary" onClick={() => setModalOpen(true)} className="add-event-btn">
         Add New Event
       </Button>
+
+      <div style={{ marginBottom: 20 }}>
+        <Input.Search
+          placeholder="Search event title..."
+          allowClear
+          enterButton
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{ maxWidth: 300 }}
+        />
+      </div>
 
       <Modal
         title="Add New Event"
@@ -155,7 +167,12 @@ const AdminEvents = () => {
 
       <h3>Upcoming Events</h3>
       <Row gutter={[16, 16]}>
-        {events.map(event => (
+        {events
+          .filter(event =>
+            event.title.toLowerCase().includes(searchText.toLowerCase())
+          )
+          .map(event => (
+
           <Col xs={24} sm={24} md={12} lg={12} key={event.id}>
             <Card
               className="styled-event-card"
