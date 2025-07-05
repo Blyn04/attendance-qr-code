@@ -84,6 +84,7 @@ const LayoutMain = () => {
         {/* ✅ Logo container */}
         <div className="sidebar-logo">
           <img src={jpcsLogo} alt="JPCS Logo" />
+          <div className="logo-text">JPCS - NU MOA</div>
         </div>
 
         <Menu
