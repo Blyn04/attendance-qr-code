@@ -28,11 +28,13 @@ import dayjs from 'dayjs';
 import '../styles/AdminEventForms.css';
 
 const { Option } = Select;
+const { Search } = Input;
 
 const AdminEventForms = () => {
   const [events, setEvents] = useState([]);
   const [editingEvent, setEditingEvent] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
@@ -117,8 +119,28 @@ const AdminEventForms = () => {
     <div className="admin-container">
       <h1 className="admin-title">📋 Manage Event Forms</h1>
 
+<div style={{ display: 'block', marginBottom: 24 }}>
+<Search
+  placeholder="Search event title..."
+  allowClear
+  enterButton
+  value={searchText}
+  onChange={(e) => setSearchText(e.target.value)}
+  style={{
+    maxWidth: 300,
+    height: 40, // 👈 Fixes vertical mismatch
+    lineHeight: '40px',
+  }}
+/>
+</div>
+
       <Row gutter={[24, 24]}>
-        {events.map(event => (
+        {events
+          .filter(event =>
+            event.title.toLowerCase().includes(searchText.toLowerCase())
+          )
+          .map(event => (
+
           <Col key={event.id} xs={24} sm={12} md={12} lg={8}>
             <Card className="event-card" title={event.title} bordered hoverable>
               <p><strong>Date:</strong> {event.date}</p>

@@ -99,3 +99,32 @@
   font-weight: 500;
   color: #000;
 }
+
+/* Fix for Input.Search alignment if broken by global styles */
+.ant-input-search {
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Fix misaligned Ant Design search input */
+.ant-input-group-wrapper {
+  display: inline-flex;
+  align-items: center;
+}
+
+.ant-input-search-button {
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Ensure the search button is vertically aligned */
+.ant-input-search-button {
+  height: 40px !important;
+  padding: 0 16px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 14px;
+}
