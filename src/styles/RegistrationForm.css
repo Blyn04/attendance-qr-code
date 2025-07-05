@@ -9,20 +9,28 @@
   --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-main);
+  background-color: #f0f2f5;
+}
+
 .form-container {
+  width: 100%;
   max-width: 480px;
-  margin: 40px auto;
-  padding: 30px 24px;
+  margin: 3rem auto;
+  padding: 2rem 1.5rem;
   background-color: var(--bg-light);
   border-radius: 12px;
   box-shadow: var(--shadow);
-  font-family: var(--font-main);
   color: var(--text-main);
+  box-sizing: border-box;
 }
 
 .form-container h2 {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
   font-size: 1.6rem;
   font-weight: 600;
   color: var(--primary);
@@ -30,16 +38,16 @@
 
 .event-info-box {
   background-color: var(--bg-section);
-  padding: 16px;
+  padding: 1rem;
   border-left: 4px solid var(--primary);
   border-radius: 6px;
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
   font-size: 0.95rem;
 }
 
 label {
   display: block;
-  margin-top: 16px;
+  margin-top: 1rem;
   font-weight: 500;
   font-size: 0.95rem;
 }
@@ -47,12 +55,13 @@ label {
 input[type="text"],
 input[type="email"] {
   width: 100%;
-  padding: 10px 12px;
-  margin-top: 6px;
+  padding: 0.625rem 0.75rem;
+  margin-top: 0.4rem;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 0.95rem;
   transition: border 0.2s;
+  box-sizing: border-box;
 }
 
 input[type="text"]:focus,
@@ -62,10 +71,10 @@ input[type="email"]:focus {
 }
 
 .checkbox-block {
-  margin-top: 20px;
+  margin-top: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.75rem;
 }
 
 .checkbox-block label {
@@ -76,14 +85,14 @@ input[type="email"]:focus {
 }
 
 .checkbox-block input[type="checkbox"] {
-  margin-right: 10px;
+  margin-right: 0.625rem;
   transform: scale(1.1);
 }
 
 button {
   width: 100%;
-  padding: 12px;
-  margin-top: 28px;
+  padding: 0.75rem;
+  margin-top: 2rem;
   background-color: var(--primary);
   color: white;
   font-weight: 600;
@@ -98,18 +107,36 @@ button:hover {
   background-color: var(--primary-dark);
 }
 
-@media (max-width: 600px) {
+/* ✅ Responsive Fixes */
+@media (max-width: 768px) {
   .form-container {
-    padding: 20px 16px;
+    margin: 2rem 1rem;
+    padding: 1.75rem 1.25rem;
   }
 
   .form-container h2 {
     font-size: 1.4rem;
+    margin-bottom: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-container {
+    margin: 1.5rem 1rem;
+    padding: 1.5rem 1rem;
+  }
+
+  .form-container h2 {
+    font-size: 1.3rem;
   }
 
   label,
   input,
   button {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+  }
+
+  button {
+    padding: 0.65rem;
   }
 }
