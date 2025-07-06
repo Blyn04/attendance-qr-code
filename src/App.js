@@ -1,22 +1,46 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import 'antd/dist/reset.css';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './config/FirebaseConfig';
+
 import LayoutMain from './components/LayoutMain';
 import RegistrationForm from './components/RegistrationForm';
 import AdminEventForms from './components/AdminEventForms';
 import Dashboard from './components/Dashboard';
-import Login from './components/Login'; 
+import Login from './components/Login';
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setChecking(false);
+    });
+    return () => unsub();
+  }, []);
+
+  if (checking) return <div>Loading...</div>;
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LayoutMain />}>
-          <Route index element={<Dashboard />} />
-          <Route path="events" element={<div />} />
-          <Route path="admin/manage-forms" element={<AdminEventForms />} />
-        </Route>
+        {/* PUBLIC ROUTES */}
+        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Login />} />
         <Route path="/form/:eventId" element={<RegistrationForm />} />
-        <Route path="/login" element={<Login />} /> 
+
+        {/* PROTECTED ROUTES */}
+        {user && (
+          <Route path="/" element={<LayoutMain />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/events" element={<div />} />
+            <Route path="/admin/manage-forms" element={<AdminEventForms />} />
+          </Route>
+        )}
+
+        {/* Redirect everything else */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );

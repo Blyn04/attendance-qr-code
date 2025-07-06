@@ -11,8 +11,10 @@ import AdminEvents from './AdminEvents';
 import AdminEventForms from './AdminEventForms';
 import Dashboard from './Dashboard';
 import CustomHeader from '../customs/CustomHeader';
-import jpcsLogo from '../assets/jpcs.png'; 
-import '../styles/LayoutMain.css'; 
+import jpcsLogo from '../assets/jpcs.png';
+import { signOut } from 'firebase/auth';
+import { auth } from '../config/FirebaseConfig'; // ✅ make sure this is correct
+import '../styles/LayoutMain.css';
 
 const { Content, Footer, Sider } = Layout;
 
@@ -48,8 +50,7 @@ const LayoutMain = () => {
   } = theme.useToken();
 
   const getSelectedKey = () => {
-    if (location.pathname === '/' || location.pathname === '/dashboard') return '0';
-    if (location.pathname.startsWith('/form')) return '1';
+    if (location.pathname === '/dashboard') return '0';
     if (location.pathname.startsWith('/admin/manage-forms')) return '4';
     if (location.pathname.startsWith('/events')) return '2';
     return '0';
@@ -58,15 +59,20 @@ const LayoutMain = () => {
   const selectedKey = getSelectedKey();
   const currentTitle = items.find(item => item.key === selectedKey)?.label || 'Dashboard';
 
-  const handleMenuClick = (e) => {
+  const handleMenuClick = async (e) => {
     if (e.key === '0') {
-      navigate('/');
+      navigate('/dashboard');
     } else if (e.key === '2') {
       navigate('/events');
     } else if (e.key === '4') {
       navigate('/admin/manage-forms');
     } else if (e.key === '3') {
-      console.log('Logging out...');
+      try {
+        await signOut(auth);
+        navigate('/'); // 🔐 redirect to login
+      } catch (err) {
+        console.error('Sign out error:', err);
+      }
     }
   };
 
@@ -74,14 +80,12 @@ const LayoutMain = () => {
     if (selectedKey === '0') return <Dashboard />;
     if (selectedKey === '2') return <AdminEvents />;
     if (selectedKey === '4') return <AdminEventForms />;
-    if (selectedKey === '3') return <div>Signing out...</div>;
     return <div>Select a menu item</div>;
   };
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider breakpoint="lg" collapsedWidth="0">
-        {/* ✅ Logo container */}
         <div className="sidebar-logo">
           <img src={jpcsLogo} alt="JPCS Logo" />
           <div className="logo-text">JPCS - NU MOA</div>

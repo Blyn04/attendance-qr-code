@@ -1,13 +1,23 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../config/FirebaseConfig";
 import "../styles/Login.css";
 
-const Login = ({ onLogin }) => {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (onLogin) onLogin({ email, password });
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate("/dashboard");
+
+    } catch (err) {
+      alert("Login failed: " + err.message);
+    }
   };
 
   return (
@@ -21,6 +31,7 @@ const Login = ({ onLogin }) => {
           required
           onChange={(e) => setEmail(e.target.value)}
         />
+
         <input
           type="password"
           placeholder="Password"
@@ -28,6 +39,7 @@ const Login = ({ onLogin }) => {
           required
           onChange={(e) => setPassword(e.target.value)}
         />
+        
         <button type="submit">Log In</button>
       </form>
     </div>
