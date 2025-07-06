@@ -178,25 +178,33 @@ const AdminEventForms = () => {
           <Form.Item label="Event Title" name="title" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
+
           <Form.Item label="Room / Venue" name="room" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
+
           <Form.Item label="Date" name="date" rules={[{ required: true }]}>
-            <DatePicker style={{ width: '100%' }} />
+            <DatePicker
+              className="custom-datepicker"
+              style={{ width: '100%' }}
+            />
           </Form.Item>
+
           <Form.Item label="Start Time" name="startTime" rules={[{ required: true }]}>
             <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} />
           </Form.Item>
+
           <Form.Item label="End Time" name="endTime" rules={[{ required: true }]}>
             <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} />
           </Form.Item>
+
           <Form.Item
             label="Form Closes At"
             name="formDeadline"
             rules={[{ required: true, message: 'Please set the form closing time' }]}
           >
             <DatePicker
-              showTime
+              showTime={{ minuteStep: 10 }}
               format="YYYY-MM-DD HH:mm"
               style={{ width: '100%' }}
             />

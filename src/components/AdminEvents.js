@@ -3,7 +3,7 @@ import { db } from '../config/FirebaseConfig';
 import { collection, addDoc, getDocs, doc, setDoc } from 'firebase/firestore';
 import {
   Card, Row, Col, Tag, Avatar, Modal, Button,
-  Input, TimePicker, message, Form, Tabs
+  Input, TimePicker, message, Form, Tabs, DatePicker,
 } from 'antd';
 import dayjs from 'dayjs';
 import CustomCalendar from '../customs/CustomCalendar';
@@ -113,15 +113,21 @@ const AdminEvents = () => {
           </Form.Item>
 
           <Form.Item label="Date" required>
-            <CustomCalendar date={date} setDate={setDate} />
+            <DatePicker
+              style={{ width: '100%' }}
+              value={date}
+              onChange={setDate}
+              format="YYYY-MM-DD"
+              className="antd-date-fix"
+            />
           </Form.Item>
 
           <Form.Item label="Start Time" required>
-            <TimePicker style={{ width: '100%' }} value={startTime} onChange={setStartTime} format="HH:mm" minuteStep={5} />
+            <TimePicker style={{ width: '100%' }} value={startTime} onChange={setStartTime} format="HH:mm" minuteStep={10} />
           </Form.Item>
 
           <Form.Item label="End Time" required>
-            <TimePicker style={{ width: '100%' }} value={endTime} onChange={setEndTime} format="HH:mm" minuteStep={5} />
+            <TimePicker style={{ width: '100%' }} value={endTime} onChange={setEndTime} format="HH:mm" minuteStep={10} />
           </Form.Item>
         </Form>
       </Modal>

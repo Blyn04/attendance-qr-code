@@ -113,3 +113,33 @@
   line-height: 1 !important;
   font-size: 14px; /* Optional, match AntD font size */
 }
+
+/* === Fix AntD DatePicker arrows (<< >> < >) === */
+
+.antd-date-fix .ant-picker-header {
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 12px;
+}
+
+.antd-date-fix .ant-picker-header button {
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  margin: 0 2px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.antd-date-fix .ant-picker-header-view {
+  display: flex !important;
+  column-gap: 12px;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.85);
+}
