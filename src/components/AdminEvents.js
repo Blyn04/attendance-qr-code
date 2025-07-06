@@ -18,6 +18,7 @@ const AdminEvents = () => {
   const [endTime, setEndTime] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [searchText, setSearchText] = useState('');
+  const [form] = Form.useForm();
 
   const fetchEvents = async () => {
     const snapshot = await getDocs(collection(db, 'events'));
@@ -39,44 +40,6 @@ const AdminEvents = () => {
     if (!title || !room || !date || !startTime || !endTime) {
       return message.error('Please fill in all fields.');
     }
-
-    try {
-      const formDeadline = dayjs(`${dayjs(date).format('YYYY-MM-DD')} ${dayjs(endTime).format('HH:mm')}`);
-      const docRef = await addDoc(collection(db, 'events'), {
-        title,
-        room,
-        date: dayjs(date).format('YYYY-MM-DD'),
-        startTime: dayjs(startTime).format('HH:mm'),
-        endTime: dayjs(endTime).format('HH:mm'),
-        formDeadline: formDeadline.toISOString(),
-      });
-
-      const defaultForm = {
-        questions: [
-          { type: 'text', label: 'Full Name', required: true },
-          { type: 'email', label: 'Email', required: true },
-          { type: 'text', label: 'Year', required: true },
-          { type: 'text', label: 'Section (Format: INF###)', required: true },
-          { type: 'checkbox', label: 'Photo Consent' },
-          { type: 'checkbox', label: 'Video Consent' },
-          { type: 'checkbox', label: 'Agree to Data Privacy Policy', required: true }
-        ]
-      };
-
-      await setDoc(doc(db, 'events', docRef.id, 'form', 'template'), defaultForm);
-
-      message.success('Event and form template created!');
-      setModalOpen(false);
-      setTitle('');
-      setRoom('');
-      setDate(null);
-      setStartTime(null);
-      setEndTime(null);
-      fetchEvents();
-    } catch (err) {
-      console.error(err);
-      message.error('Failed to add event and form.');
-    }
   };
 
   const handleCardClick = (event) => {
@@ -85,16 +48,15 @@ const AdminEvents = () => {
 
   return (
     <div className="admin-container">
-      <Button type="primary" onClick={() => setModalOpen(true)} className="add-event-btn">
-        Add New Event
-      </Button>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, gap: 16 }}>
+        <Button type="primary" onClick={() => setModalOpen(true)} className="add-event-btn">
+          Add New Event
+        </Button>
 
-      <div style={{ marginBottom: 20 }}>
         <Input.Search
           placeholder="Search event title..."
           allowClear
           enterButton
-          size="large"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           style={{ maxWidth: 300 }}
@@ -104,37 +66,104 @@ const AdminEvents = () => {
       <Modal
         title="Add New Event"
         open={modalOpen}
-        onOk={handleSubmit}
-        onCancel={() => setModalOpen(false)}
+        onOk={() => form.submit()}
+        onCancel={() => {
+          setModalOpen(false);
+          form.resetFields();
+        }}
         okText="Add Event"
         cancelText="Cancel"
         width={600}
       >
-        <Form layout="vertical">
-          <Form.Item label="Event Title" required>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Form
+          layout="vertical"
+          form={form}
+          onFinish={async (values) => {
+            try {
+              const docRef = await addDoc(collection(db, 'events'), {
+                title: values.title,
+                room: values.room,
+                date: dayjs(values.date).format('YYYY-MM-DD'),
+                startTime: dayjs(values.startTime).format('HH:mm'),
+                endTime: dayjs(values.endTime).format('HH:mm'),
+                formDeadline: dayjs(values.formDeadline).toISOString(),
+              });
+
+              const defaultForm = {
+                questions: [
+                  { type: 'text', label: 'Full Name', required: true },
+                  { type: 'email', label: 'Email', required: true },
+                  { type: 'text', label: 'Year', required: true },
+                  { type: 'text', label: 'Section (Format: INF###)', required: true },
+                  { type: 'checkbox', label: 'Photo Consent' },
+                  { type: 'checkbox', label: 'Video Consent' },
+                  { type: 'checkbox', label: 'Agree to Data Privacy Policy', required: true }
+                ]
+              };
+
+              await setDoc(doc(db, 'events', docRef.id, 'form', 'template'), defaultForm);
+
+              message.success('Event and form template created!');
+              setModalOpen(false);
+              form.resetFields();
+              fetchEvents();
+            } catch (err) {
+              console.error(err);
+              message.error('Failed to add event and form.');
+            }
+          }}
+        >
+          <Form.Item
+            label="Event Title"
+            name="title"
+            rules={[{ required: true, message: 'Please input the event title' }]}
+          >
+            <Input />
           </Form.Item>
 
-          <Form.Item label="Venue / Room" required>
-            <Input value={room} onChange={(e) => setRoom(e.target.value)} />
+          <Form.Item
+            label="Venue / Room"
+            name="room"
+            rules={[{ required: true, message: 'Please input the venue or room' }]}
+          >
+            <Input />
           </Form.Item>
 
-          <Form.Item label="Date" required>
+          <Form.Item
+            label="Date"
+            name="date"
+            rules={[{ required: true, message: 'Please select a date' }]}
+          >
+            <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" />
+          </Form.Item>
+
+          <Form.Item
+            label="Start Time"
+            name="startTime"
+            rules={[{ required: true, message: 'Please select a start time' }]}
+          >
+            <TimePicker style={{ width: '100%' }} format="HH:mm" minuteStep={10} />
+          </Form.Item>
+
+          <Form.Item
+            label="End Time"
+            name="endTime"
+            rules={[{ required: true, message: 'Please select an end time' }]}
+          >
+            <TimePicker style={{ width: '100%' }} format="HH:mm" minuteStep={10} />
+          </Form.Item>
+
+          <Form.Item
+            label="Form Closes"
+            name="formDeadline"
+            rules={[{ required: true, message: 'Please select form closing time' }]}
+          >
             <DatePicker
+              showTime={{ format: 'HH:mm' }}
+              format="YYYY-MM-DD HH:mm"
               style={{ width: '100%' }}
-              value={date}
-              onChange={setDate}
-              format="YYYY-MM-DD"
-              className="antd-date-fix"
+              minuteStep={10}
             />
-          </Form.Item>
-
-          <Form.Item label="Start Time" required>
-            <TimePicker style={{ width: '100%' }} value={startTime} onChange={setStartTime} format="HH:mm" minuteStep={10} />
-          </Form.Item>
-
-          <Form.Item label="End Time" required>
-            <TimePicker style={{ width: '100%' }} value={endTime} onChange={setEndTime} format="HH:mm" minuteStep={10} />
           </Form.Item>
         </Form>
       </Modal>
@@ -224,7 +253,7 @@ const AdminEvents = () => {
                 </div>
               </Card>
             </Col>
-        ))}
+          ))}
       </Row>
     </div>
   );

@@ -107,89 +107,101 @@ const AdminEventForms = () => {
     setEditModalVisible(true);
   };
 
-const handleUpdate = async () => {
-  try {
-    const values = await form.validateFields();
-    const eventRef = doc(db, 'events', editingEvent.id);
-    const formTemplateRef = doc(db, 'events', editingEvent.id, 'form', 'template');
+  const handleUpdate = async () => {
+    try {
+      const values = await form.validateFields();
 
-    await updateDoc(eventRef, {
-      title: values.title,
-      room: values.room,
-      date: values.date.format('YYYY-MM-DD'),
-      startTime: values.startTime.format('HH:mm'),
-      endTime: values.endTime.format('HH:mm'),
-      formDeadline: values.formDeadline.toISOString(),
-    });
+      const existingTitles = events
+        .filter(e => e.id !== editingEvent.id)
+        .map(e => e.title.trim().toLowerCase());
 
-    const existingFormSnap = await getDoc(formTemplateRef);
-    let existingFormData = existingFormSnap.exists() ? existingFormSnap.data() : {};
-
-    const cleanObject = (obj) => {
-      if (Array.isArray(obj)) {
-        return obj.map(cleanObject).filter((item) => item !== undefined && item !== null);
-      } else if (obj && typeof obj === 'object') {
-        const cleaned = {};
-        for (const [key, value] of Object.entries(obj)) {
-          const v = cleanObject(value);
-          if (v !== undefined && v !== null) {
-            cleaned[key] = v;
-          }
-        }
-        return cleaned;
-      } else if (obj !== undefined) {
-        return obj;
+      if (existingTitles.includes(values.title.trim().toLowerCase())) {
+        return message.error('An event with this title already exists.');
       }
-      return undefined;
-    };
 
-    existingFormData = cleanObject(existingFormData);
+      const labels = values.customQuestions?.map(q => q.label?.trim().toLowerCase()).filter(Boolean);
+      const labelSet = new Set(labels);
+      if (labels.length !== labelSet.size) {
+        return message.error('Custom question labels must be unique.');
+      }
 
-    const updatedTemplate = {
-      ...existingFormData,
-      customQuestions: cleanObject(values.customQuestions || []),
-    };
+      const eventRef = doc(db, 'events', editingEvent.id);
+      const formTemplateRef = doc(db, 'events', editingEvent.id, 'form', 'template');
 
-    await setDoc(formTemplateRef, updatedTemplate);
+      await updateDoc(eventRef, {
+        title: values.title,
+        room: values.room,
+        date: values.date.format('YYYY-MM-DD'),
+        startTime: values.startTime.format('HH:mm'),
+        endTime: values.endTime.format('HH:mm'),
+        formDeadline: values.formDeadline.toISOString(),
+      });
 
-    message.success('Event updated successfully!');
-    setEditModalVisible(false);
+      const existingFormSnap = await getDoc(formTemplateRef);
+      let existingFormData = existingFormSnap.exists() ? existingFormSnap.data() : {};
 
-    // ✅ Reload the events so customQuestions update
-    const snapshot = await getDocs(collection(db, 'events'));
-    const list = await Promise.all(snapshot.docs.map(async docSnap => {
-      const eventId = docSnap.id;
-      const eventData = docSnap.data();
-      const formRef = doc(db, 'events', eventId, 'form', 'template');
-      const formSnap = await getDoc(formRef);
-      const formTemplate = formSnap.exists() ? formSnap.data() : null;
-
-      return {
-        id: eventId,
-        ...eventData,
-        formTemplate
+      const cleanObject = (obj) => {
+        if (Array.isArray(obj)) {
+          return obj.map(cleanObject).filter((item) => item !== undefined && item !== null);
+        } else if (obj && typeof obj === 'object') {
+          const cleaned = {};
+          for (const [key, value] of Object.entries(obj)) {
+            const v = cleanObject(value);
+            if (v !== undefined && v !== null) {
+              cleaned[key] = v;
+            }
+          }
+          return cleaned;
+        } else if (obj !== undefined) {
+          return obj;
+        }
+        return undefined;
       };
-    }));
 
-    list.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
-    setEvents(list); // 🔄 force re-render with new Firestore data
+      existingFormData = cleanObject(existingFormData);
 
-  } catch (error) {
-    console.error('Error updating event:', error);
-    message.error('Failed to update event');
-  }
-};
+      const updatedTemplate = {
+        ...existingFormData,
+        customQuestions: cleanObject(values.customQuestions || []),
+      };
+
+      await setDoc(formTemplateRef, updatedTemplate);
+
+      message.success('Event updated successfully!');
+      setEditModalVisible(false);
+
+      // Reload updated events
+      const snapshot = await getDocs(collection(db, 'events'));
+      const list = await Promise.all(snapshot.docs.map(async docSnap => {
+        const eventId = docSnap.id;
+        const eventData = docSnap.data();
+        const formRef = doc(db, 'events', eventId, 'form', 'template');
+        const formSnap = await getDoc(formRef);
+        const formTemplate = formSnap.exists() ? formSnap.data() : null;
+
+        return {
+          id: eventId,
+          ...eventData,
+          formTemplate
+        };
+      }));
+
+      list.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
+      setEvents(list);
+
+    } catch (error) {
+      console.error('Error updating event:', error);
+      message.error('Failed to update event');
+    }
+  };
 
   return (
     <div className="admin-container">
-      <h1 className="admin-title">📋 Manage Event Forms</h1>
-
       <div className="search-bar-container">
         <Search
           placeholder="Search event title..."
           allowClear
           enterButton
-          size="large"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           className="search-bar"
@@ -280,18 +292,10 @@ const handleUpdate = async () => {
                 <label className="custom-question-label">📝 Custom Questions (for registration form)</label>
                 {fields.map(({ key, name, ...restField }) => (
                   <Space key={key} direction="vertical" className="custom-question-item" style={{ width: '100%' }}>
-                    {/* Hidden input to make sure 'required' is initialized */}
                     <Form.Item
-                      {...restField}
-                      name={[name, 'required']}
-                      valuePropName="checked"
+                      shouldUpdate
                       noStyle
                     >
-                      <Input type="hidden" />
-                    </Form.Item>
-
-                    {/* Conditionally required label */}
-                    <Form.Item shouldUpdate>
                       {({ getFieldValue }) => {
                         const required = getFieldValue(['customQuestions', name, 'required']) ?? false;
                         return (
@@ -299,7 +303,20 @@ const handleUpdate = async () => {
                             {...restField}
                             name={[name, 'label']}
                             label={`Question ${name + 1}`}
-                            rules={required ? [{ required: true, message: 'Please input the question text' }] : []}
+                            rules={[
+                              required && { required: true, message: 'Please input the question text' },
+                              {
+                                validator: async (_, value) => {
+                                  const labels = form.getFieldValue('customQuestions')?.map(q =>
+                                    (q?.label || '').trim().toLowerCase()
+                                  );
+                                  const occurrences = labels.filter(v => v === (value || '').trim().toLowerCase());
+                                  if (occurrences.length > 1) {
+                                    throw new Error('Duplicate question label');
+                                  }
+                                }
+                              }
+                            ].filter(Boolean)}
                             className="form-item"
                           >
                             <Input className="form-input" placeholder="e.g. What's your full name?" />
@@ -312,8 +329,6 @@ const handleUpdate = async () => {
                       {...restField}
                       name={[name, 'type']}
                       label="Input Type"
-                      colon={false}
-                      required={false}
                       rules={[{ required: true, message: 'Please select an input type' }]}
                       className="form-item"
                     >
@@ -325,7 +340,6 @@ const handleUpdate = async () => {
                       </Select>
                     </Form.Item>
 
-                    {/* Required toggle switch */}
                     <Form.Item
                       {...restField}
                       label="Required?"
