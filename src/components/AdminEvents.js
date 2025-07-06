@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../config/FirebaseConfig';
-import { collection, addDoc, getDocs, doc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, setDoc, onSnapshot } from 'firebase/firestore';
 import {
   Card, Row, Col, Tag, Avatar, Modal, Button,
   Input, TimePicker, message, Form, Tabs, DatePicker,
 } from 'antd';
 import dayjs from 'dayjs';
-import CustomCalendar from '../customs/CustomCalendar';
 import '../styles/AdminEvents.css';
 
 const AdminEvents = () => {
@@ -23,11 +22,24 @@ const AdminEvents = () => {
   const fetchEvents = async () => {
     const snapshot = await getDocs(collection(db, 'events'));
     const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    // Sort events by date (ascending)
+    list.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
+
     setEvents(list);
   };
 
   useEffect(() => {
-    fetchEvents();
+    const unsub = onSnapshot(collection(db, 'events'), (snapshot) => {
+      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      // Sort by date ascending (e.g. 2025-07-10)
+      list.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
+
+      setEvents(list);
+    });
+
+    return () => unsub(); // 🔄 Cleanup listener
   }, []);
 
   const handleSubmit = async () => {

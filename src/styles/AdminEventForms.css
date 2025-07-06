@@ -6,11 +6,6 @@
   font-family: 'Segoe UI', sans-serif;
 }
 
-/* Add Event button */
-.add-event-btn {
-  margin-bottom: 24px;
-}
-
 /* Card style for events */
 .styled-event-card {
   border: 1px solid #e6e6f0;

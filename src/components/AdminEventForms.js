@@ -6,7 +6,8 @@ import {
   getDoc,
   doc,
   updateDoc,
-  setDoc // added setDoc
+  setDoc,
+  onSnapshot
 } from 'firebase/firestore';
 import {
   Button,
@@ -58,8 +59,29 @@ const AdminEventForms = () => {
   };
 
   useEffect(() => {
-    fetchEvents();
-  }, []);
+    const unsub = onSnapshot(collection(db, 'events'), async (snapshot) => {
+      const list = await Promise.all(snapshot.docs.map(async docSnap => {
+        const eventId = docSnap.id;
+        const eventData = docSnap.data();
+
+        const formRef = doc(db, 'events', eventId, 'form', 'template');
+        const formSnap = await getDoc(formRef);
+        const formTemplate = formSnap.exists() ? formSnap.data() : null;
+
+        return {
+          id: eventId,
+          ...eventData,
+          formTemplate
+        };
+      }));
+
+      // Sort by date ascending
+      list.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
+      setEvents(list);
+    });
+
+    return () => unsub();
+  }, [])
 
   const copyLink = (id) => {
     const url = `${window.location.origin}/form/${id}`;
@@ -108,7 +130,7 @@ const AdminEventForms = () => {
 
       message.success('Event updated successfully!');
       setEditModalVisible(false);
-      fetchEvents();
+      
     } catch (error) {
       console.error('Error updating event:', error);
       message.error('Failed to update event');
@@ -210,7 +232,6 @@ const AdminEventForms = () => {
             />
           </Form.Item>
 
-          {/* 🔽 Custom Questions Section */}
           <Form.List name="customQuestions">
             {(fields, { add, remove }) => (
               <>

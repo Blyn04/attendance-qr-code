@@ -143,3 +143,20 @@
   font-weight: 500;
   color: rgba(0, 0, 0, 0.85);
 }
+
+/* Add Event button */
+.add-event-btn {
+  margin-bottom: 24px;
+  width: 10%;
+}
+
+/* Add spacing between Cancel and Add Event buttons */
+.ant-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px; /* Adjust spacing between buttons */
+}
+
+.ant-modal-footer .ant-btn {
+  min-width: 100px; /* Optional: consistent button width */
+}
