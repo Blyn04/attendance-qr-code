@@ -11,8 +11,13 @@ const RegistrationForm = () => {
   const [customQuestions, setCustomQuestions] = useState([]);
   const [isClosed, setIsClosed] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: '', email: '', year: '', section: '',
-    photoConsent: false, videoConsent: false, dataPrivacyAgreement: false,
+    fullName: '',
+    email: '',
+    year: '',
+    section: '',
+    photoConsent: false,
+    videoConsent: false,
+    dataPrivacyAgreement: false,
     customAnswers: {}
   });
   const [submitted, setSubmitted] = useState(false);
@@ -30,8 +35,8 @@ const RegistrationForm = () => {
         setEvent(eventData);
 
         if (formSnap.exists()) {
-          const formData = formSnap.data();
-          setCustomQuestions(formData.customQuestions || []);
+          const formTemp = formSnap.data();
+          setCustomQuestions(formTemp.customQuestions || []);
         }
 
         if (eventData.formDeadline && dayjs().isAfter(dayjs(eventData.formDeadline))) {
@@ -49,24 +54,52 @@ const RegistrationForm = () => {
       const questionKey = name.replace('custom_', '');
       setFormData(prev => ({
         ...prev,
-        customAnswers: { ...prev.customAnswers, [questionKey]: type === 'checkbox' ? checked : value }
+        customAnswers: {
+          ...prev.customAnswers,
+          [questionKey]: type === 'checkbox' ? checked : value
+        }
       }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const sectionPattern = /^INF\d{3}$/i;
+    if (!sectionPattern.test(formData.section.trim())) {
+      alert("Section must be in the format INF### (e.g., INF123)");
+      return;
+    }
+
     if (!formData.dataPrivacyAgreement) {
       alert("You must accept the data privacy terms.");
       return;
     }
 
-    await addDoc(collection(db, 'registrations'), {
-      ...formData,
-      eventId,
-      submittedAt: new Date()
+    // Save to Firestore
+    const docRef = await addDoc(
+      collection(db, 'events', eventId, 'registrations'),
+      {
+        ...formData,
+        submittedAt: new Date()
+      }
+    );
+
+    // ✅ Send QR email to local backend server
+    await fetch('http://localhost:3001/send-qr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: formData.email,
+        fullName: formData.fullName,
+        eventTitle: event.title,
+        qrData: docRef.id // Use Firestore doc ID as QR content
+      })
     });
 
     setSubmitted(true);
@@ -113,43 +146,58 @@ const RegistrationForm = () => {
       </div>
 
       <div className="form-group">
-        <label htmlFor="year">Year <span className="required-asterisk">*</span></label>
-        <input
-          type="text"
+        <label htmlFor="year">
+          Year <span className="required-asterisk">*</span>
+        </label>
+        <select
           id="year"
           name="year"
           className="form-input"
           value={formData.year}
           onChange={handleChange}
           required
-        />
+        >
+          <option value="">Select your year</option>
+          <option value="1st Year">1st Year</option>
+          <option value="2nd Year">2nd Year</option>
+          <option value="3rd Year">3rd Year</option>
+          <option value="4th Year">4th Year</option>
+        </select>
       </div>
 
       <div className="form-group">
-        <label htmlFor="section">Section (INF###) <span className="required-asterisk">*</span></label>
+        <label htmlFor="section">
+          Section (INF###) <span className="required-asterisk">*</span>
+        </label>
         <input
           type="text"
           id="section"
           name="section"
           className="form-input"
           value={formData.section}
-          onChange={handleChange}
+          onChange={(e) => {
+            const input = e.target.value.toUpperCase();
+            if (/^I?$|^IN?$|^INF?$|^INF\d{0,3}$/.test(input)) {
+              setFormData(prev => ({ ...prev, section: input }));
+            }
+          }}
           required
         />
+        {formData.section && !/^INF\d{3}$/.test(formData.section) && (
+          <p className="error-text">Must follow format: INF123</p>
+        )}
       </div>
 
       {customQuestions.map((q, idx) => {
         const fieldName = `custom_${idx}`;
-        const value = formData.customAnswers?.[idx] || '';
+        const value = formData.customAnswers[idx] || '';
         const isRequired = q.required === true;
 
         return (
           <div key={idx} className="form-group custom-question">
             <label htmlFor={fieldName}>
-              {q.label}
-              {isRequired && <span className="required-asterisk">*</span>}
+              {q.label}{isRequired && <span className="required-asterisk">*</span>}
             </label>
-
             {q.type === 'checkbox' ? (
               <input
                 type="checkbox"
