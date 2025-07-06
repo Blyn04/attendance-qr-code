@@ -22,24 +22,17 @@ const AdminEvents = () => {
   const fetchEvents = async () => {
     const snapshot = await getDocs(collection(db, 'events'));
     const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-    // Sort events by date (ascending)
     list.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
-
     setEvents(list);
   };
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'events'), (snapshot) => {
       const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-      // Sort by date ascending (e.g. 2025-07-10)
       list.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
-
       setEvents(list);
     });
-
-    return () => unsub(); // 🔄 Cleanup listener
+    return () => unsub();
   }, []);
 
   const handleSubmit = async () => {
@@ -48,12 +41,14 @@ const AdminEvents = () => {
     }
 
     try {
+      const formDeadline = dayjs(`${dayjs(date).format('YYYY-MM-DD')} ${dayjs(endTime).format('HH:mm')}`);
       const docRef = await addDoc(collection(db, 'events'), {
         title,
         room,
         date: dayjs(date).format('YYYY-MM-DD'),
         startTime: dayjs(startTime).format('HH:mm'),
         endTime: dayjs(endTime).format('HH:mm'),
+        formDeadline: formDeadline.toISOString(),
       });
 
       const defaultForm = {
@@ -162,6 +157,9 @@ const AdminEvents = () => {
                   <p><strong>Room:</strong> {selectedEvent?.room || 'TBD'}</p>
                   <p><strong>Date:</strong> {selectedEvent?.date}</p>
                   <p><strong>Time:</strong> {selectedEvent?.startTime} - {selectedEvent?.endTime}</p>
+                  {selectedEvent?.formDeadline && (
+                    <p><strong>Form Closes:</strong> {dayjs(selectedEvent.formDeadline).format('YYYY-MM-DD HH:mm')}</p>
+                  )}
                 </div>
               ),
             },
@@ -191,39 +189,41 @@ const AdminEvents = () => {
             event.title.toLowerCase().includes(searchText.toLowerCase())
           )
           .map(event => (
-
-          <Col xs={24} sm={24} md={12} lg={12} key={event.id}>
-            <Card
-              className="styled-event-card"
-              bordered={false}
-              hoverable
-              onClick={() => handleCardClick(event)}
-            >
-              <div className="event-card-header">
-                <Avatar shape="square" size="large" style={{ backgroundColor: '#f5a623' }}>
-                  {event.title.slice(0, 2).toUpperCase()}
-                </Avatar>
-                <div className="event-title-meta">
-                  <h3>{event.title}</h3>
-                  <p className="event-meta"><strong>Room:</strong> {event.room || 'TBD'}</p>
+            <Col xs={24} sm={24} md={12} lg={12} key={event.id}>
+              <Card
+                className="styled-event-card"
+                bordered={false}
+                hoverable
+                onClick={() => handleCardClick(event)}
+              >
+                <div className="event-card-header">
+                  <Avatar shape="square" size="large" style={{ backgroundColor: '#f5a623' }}>
+                    {event.title.slice(0, 2).toUpperCase()}
+                  </Avatar>
+                  <div className="event-title-meta">
+                    <h3>{event.title}</h3>
+                    <p className="event-meta"><strong>Room:</strong> {event.room || 'TBD'}</p>
+                  </div>
+                  <Tag className="date-badge" color="red">Date: {event.date}</Tag>
                 </div>
-                <Tag className="date-badge" color="red">Date: {event.date}</Tag>
-              </div>
-              <div className="event-description">
-                <p><strong>Time:</strong> {event.startTime} – {event.endTime}</p>
-                <p>
-                  <Button
-                    size="small"
-                    href={`/form/${event.id}`}
-                    target="_blank"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Copy Link
-                  </Button>
-                </p>
-              </div>
-            </Card>
-          </Col>
+                <div className="event-description">
+                  <p><strong>Time:</strong> {event.startTime} – {event.endTime}</p>
+                  {event.formDeadline && (
+                    <p><strong>Form Closes:</strong> {dayjs(event.formDeadline).format('YYYY-MM-DD HH:mm')}</p>
+                  )}
+                  <p>
+                    <Button
+                      size="small"
+                      href={`/form/${event.id}`}
+                      target="_blank"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Copy Link
+                    </Button>
+                  </p>
+                </div>
+              </Card>
+            </Col>
         ))}
       </Row>
     </div>
