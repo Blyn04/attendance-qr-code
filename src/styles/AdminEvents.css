@@ -103,8 +103,13 @@
 }
 
 .ant-input-search-button {
-  height: 100% !important;
-  display: flex !important;
+  height: 32px !important; /* 👈 Correct height for size="middle" */
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+  padding: 0 12px !important;
+  border-radius: 0 6px 6px 0 !important;
+  box-shadow: none !important;
+  line-height: 1 !important;
+  font-size: 14px; /* Optional, match AntD font size */
 }

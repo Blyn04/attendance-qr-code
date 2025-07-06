@@ -87,6 +87,7 @@ const AdminEvents = () => {
           placeholder="Search event title..."
           allowClear
           enterButton
+          size="large"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           style={{ maxWidth: 300 }}

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import 'antd/dist/reset.css';
 import LayoutMain from './components/LayoutMain';
 import RegistrationForm from './components/RegistrationForm';
 import AdminEventForms from './components/AdminEventForms';

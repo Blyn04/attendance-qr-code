@@ -119,20 +119,21 @@ const AdminEventForms = () => {
     <div className="admin-container">
       <h1 className="admin-title">📋 Manage Event Forms</h1>
 
-<div style={{ display: 'block', marginBottom: 24 }}>
-<Search
-  placeholder="Search event title..."
-  allowClear
-  enterButton
-  value={searchText}
-  onChange={(e) => setSearchText(e.target.value)}
-  style={{
-    maxWidth: 300,
-    height: 40, // 👈 Fixes vertical mismatch
-    lineHeight: '40px',
-  }}
-/>
-</div>
+      <div style={{ display: 'block', marginBottom: 24 }}>
+        <Search
+          placeholder="Search event title..."
+          allowClear
+          enterButton
+          size="large"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{
+            maxWidth: 300,
+            height: 40, // 👈 Fixes vertical mismatch
+            lineHeight: '40px',
+          }}
+        />
+      </div>
 
       <Row gutter={[24, 24]}>
         {events
