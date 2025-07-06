@@ -18,6 +18,7 @@ const AdminEvents = () => {
   const [endTime, setEndTime] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [searchText, setSearchText] = useState('');
+  const [registrations, setRegistrations] = useState([]);
   const [form] = Form.useForm();
 
   const fetchEvents = async () => {
@@ -42,8 +43,12 @@ const AdminEvents = () => {
     }
   };
 
-  const handleCardClick = (event) => {
+  const handleCardClick = async (event) => {
     setSelectedEvent(event);
+
+    const regSnapshot = await getDocs(collection(db, 'events', event.id, 'registrations'));
+    const regList = regSnapshot.docs.map(doc => doc.data());
+    setRegistrations(regList);
   };
 
   return (
@@ -192,10 +197,24 @@ const AdminEvents = () => {
                 </div>
               ),
             },
-            {
+           {
               key: '2',
-              label: 'Registrations',
-              children: <div>📋 Registrations list goes here</div>,
+              label: `Registrations (${registrations.length})`,
+              children: (
+                <div>
+                  {registrations.length === 0 ? (
+                    <p>No one has registered yet.</p>
+                  ) : (
+                    <ul style={{ maxHeight: 300, overflowY: 'auto' }}>
+                      {registrations.map((reg, idx) => (
+                        <li key={idx}>
+                          <strong>{reg.fullName}</strong> ({reg.email})
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ),
             },
             {
               key: '3',
