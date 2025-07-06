@@ -1,0 +1,35 @@
+.dashboard-title {
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.analytics-list {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.analytics-list .ant-list-item {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 12px 0;
+}
+
+.analytics-list .ant-list-item-meta-title {
+  font-weight: 600;
+  color: #222;
+}
+
+.analytics-list .ant-list-item-meta-description {
+  color: #555;
+}
+
+.ant-card h2 {
+  margin: 0;
+  color: #1890ff;
+}
+
+canvas {
+  max-width: 100% !important;
+  height: auto !important;
+}
