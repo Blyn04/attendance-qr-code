@@ -21,7 +21,8 @@ import {
   TimePicker,
   DatePicker,
   Space,
-  Select
+  Select,
+  Switch
 } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -130,7 +131,7 @@ const AdminEventForms = () => {
 
       message.success('Event updated successfully!');
       setEditModalVisible(false);
-      
+
     } catch (error) {
       console.error('Error updating event:', error);
       message.error('Failed to update event');
@@ -232,47 +233,65 @@ const AdminEventForms = () => {
             />
           </Form.Item>
 
-          <Form.List name="customQuestions">
-            {(fields, { add, remove }) => (
-              <>
-                <label>📝 Custom Questions (for registration form)</label>
-                  {fields.map(({ key, name, ...restField }) => (
-                    <Space key={key} direction="vertical" style={{ display: 'block', marginBottom: 8 }}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 'label']}
-                        label={`Question ${name + 1}`}
-                        rules={[{ required: true, message: 'Please input the question text' }]}
-                      >
-                        <Input placeholder="e.g. What's your full name?" />
-                      </Form.Item>
-
-                      <Form.Item
-                        {...restField}
-                        name={[name, 'type']}
-                        label="Input Type"
-                        rules={[{ required: true, message: 'Please select an input type' }]}
-                      >
-                        <Select placeholder="Select input type">
-                          <Option value="text">Text</Option>
-                          <Option value="email">Email</Option>
-                          <Option value="number">Number</Option>
-                          <Option value="checkbox">Checkbox</Option>
-                        </Select>
-                      </Form.Item>
-
-                      <Button danger type="link" onClick={() => remove(name)}>Remove</Button>
-                      <hr />
-                    </Space>
-                  ))}
-                <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block>
-                    + Add Question
-                  </Button>
+      <Form.List name="customQuestions">
+        {(fields, { add, remove }) => (
+          <>
+            <label>📝 Custom Questions (for registration form)</label>
+            {fields.map(({ key, name, ...restField }) => (
+              <Space key={key} direction="vertical" style={{ display: 'block', marginBottom: 8 }}>
+                <Form.Item
+                  {...restField}
+                  name={[name, 'label']}
+                  label={`Question ${name + 1}`}
+                  rules={[{ required: true, message: 'Please input the question text' }]}
+                >
+                  <Input placeholder="e.g. What's your full name?" />
                 </Form.Item>
-              </>
-            )}
-          </Form.List>
+
+                <Form.Item
+                  {...restField}
+                  name={[name, 'type']}
+                  label="Input Type"
+                  rules={[{ required: true, message: 'Please select an input type' }]}
+                >
+                  <Select placeholder="Select input type">
+                    <Option value="text">Text</Option>
+                    <Option value="email">Email</Option>
+                    <Option value="number">Number</Option>
+                    <Option value="checkbox">Checkbox</Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label="" colon={false} className="question-required-toggle">
+                  <div className="toggle-row">
+                    <span className="toggle-label">Required?</span>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'required']}
+                      valuePropName="checked"
+                      noStyle
+                    >
+                      <Switch
+                        className="custom-required-switch"
+                        checkedChildren="Yes"
+                        unCheckedChildren="No"
+                      />
+                    </Form.Item>
+                  </div>
+                </Form.Item>
+
+                <Button danger type="link" onClick={() => remove(name)}>Remove</Button>
+                <hr />
+              </Space>
+            ))}
+            <Form.Item>
+              <Button type="dashed" onClick={() => add()} block>
+                + Add Question
+              </Button>
+            </Form.Item>
+          </>
+        )}
+      </Form.List>
         </Form>
       </Modal>
     </div>
