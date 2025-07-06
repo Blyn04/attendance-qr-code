@@ -76,13 +76,12 @@ const AdminEventForms = () => {
         };
       }));
 
-      // Sort by date ascending
       list.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
       setEvents(list);
     });
 
     return () => unsub();
-  }, [])
+  }, []);
 
   const copyLink = (id) => {
     const url = `${window.location.origin}/form/${id}`;
@@ -108,41 +107,84 @@ const AdminEventForms = () => {
     setEditModalVisible(true);
   };
 
-  const handleUpdate = async () => {
-    try {
-      const values = await form.validateFields();
-      const eventRef = doc(db, 'events', editingEvent.id);
-      const formTemplateRef = doc(db, 'events', editingEvent.id, 'form', 'template');
+const handleUpdate = async () => {
+  try {
+    const values = await form.validateFields();
+    const eventRef = doc(db, 'events', editingEvent.id);
+    const formTemplateRef = doc(db, 'events', editingEvent.id, 'form', 'template');
 
-      // Update event main info
-      await updateDoc(eventRef, {
-        title: values.title,
-        room: values.room,
-        date: values.date.format('YYYY-MM-DD'),
-        startTime: values.startTime.format('HH:mm'),
-        endTime: values.endTime.format('HH:mm'),
-        formDeadline: values.formDeadline.toISOString(),
-      });
+    await updateDoc(eventRef, {
+      title: values.title,
+      room: values.room,
+      date: values.date.format('YYYY-MM-DD'),
+      startTime: values.startTime.format('HH:mm'),
+      endTime: values.endTime.format('HH:mm'),
+      formDeadline: values.formDeadline.toISOString(),
+    });
 
-      // Save custom questions to form/template
-      await setDoc(formTemplateRef, {
-        customQuestions: values.customQuestions || [],
-      }, { merge: true });
+    const existingFormSnap = await getDoc(formTemplateRef);
+    let existingFormData = existingFormSnap.exists() ? existingFormSnap.data() : {};
 
-      message.success('Event updated successfully!');
-      setEditModalVisible(false);
+    const cleanObject = (obj) => {
+      if (Array.isArray(obj)) {
+        return obj.map(cleanObject).filter((item) => item !== undefined && item !== null);
+      } else if (obj && typeof obj === 'object') {
+        const cleaned = {};
+        for (const [key, value] of Object.entries(obj)) {
+          const v = cleanObject(value);
+          if (v !== undefined && v !== null) {
+            cleaned[key] = v;
+          }
+        }
+        return cleaned;
+      } else if (obj !== undefined) {
+        return obj;
+      }
+      return undefined;
+    };
 
-    } catch (error) {
-      console.error('Error updating event:', error);
-      message.error('Failed to update event');
-    }
-  };
+    existingFormData = cleanObject(existingFormData);
+
+    const updatedTemplate = {
+      ...existingFormData,
+      customQuestions: cleanObject(values.customQuestions || []),
+    };
+
+    await setDoc(formTemplateRef, updatedTemplate);
+
+    message.success('Event updated successfully!');
+    setEditModalVisible(false);
+
+    // ✅ Reload the events so customQuestions update
+    const snapshot = await getDocs(collection(db, 'events'));
+    const list = await Promise.all(snapshot.docs.map(async docSnap => {
+      const eventId = docSnap.id;
+      const eventData = docSnap.data();
+      const formRef = doc(db, 'events', eventId, 'form', 'template');
+      const formSnap = await getDoc(formRef);
+      const formTemplate = formSnap.exists() ? formSnap.data() : null;
+
+      return {
+        id: eventId,
+        ...eventData,
+        formTemplate
+      };
+    }));
+
+    list.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
+    setEvents(list); // 🔄 force re-render with new Firestore data
+
+  } catch (error) {
+    console.error('Error updating event:', error);
+    message.error('Failed to update event');
+  }
+};
 
   return (
     <div className="admin-container">
       <h1 className="admin-title">📋 Manage Event Forms</h1>
 
-      <div style={{ display: 'block', marginBottom: 24 }}>
+      <div className="search-bar-container">
         <Search
           placeholder="Search event title..."
           allowClear
@@ -150,43 +192,42 @@ const AdminEventForms = () => {
           size="large"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          style={{
-            maxWidth: 300,
-            height: 40, // 👈 Fixes vertical mismatch
-            lineHeight: '40px',
-          }}
+          className="search-bar"
         />
       </div>
 
-      <Row gutter={[24, 24]}>
+      <Row gutter={[24, 24]} className="event-row">
         {events
           .filter(event =>
             event.title.toLowerCase().includes(searchText.toLowerCase())
           )
           .map(event => (
-
-          <Col key={event.id} xs={24} sm={12} md={12} lg={8}>
-            <Card className="event-card" title={event.title} bordered hoverable>
-              <p><strong>Date:</strong> {event.date}</p>
-              <p><strong>Time:</strong> {event.startTime} - {event.endTime}</p>
-              <p><strong>Room:</strong> {event.room || 'TBD'}</p>
-              {event.formDeadline && (
-                <p><strong>Form Closes:</strong> {dayjs(event.formDeadline).format('YYYY-MM-DD HH:mm')}</p>
-              )}
-
-              {event.formTemplate ? (
-                <div className="button-group">
-                  <a href={`/form/${event.id}`} target="_blank" rel="noopener noreferrer">
-                    <Button type="primary">View Form</Button>
-                  </a>
-                  <Button onClick={() => copyLink(event.id)}>Copy Link</Button>
-                  <Button onClick={() => openFormEditor(event)} type="dashed">Edit</Button>
+            <Col key={event.id} xs={24} sm={12} md={12} lg={8} className="event-col">
+              <Card className="event-card" title={event.title} bordered hoverable>
+                <div className="event-details">
+                  <p className="event-detail"><strong>Date:</strong> {event.date}</p>
+                  <p className="event-detail"><strong>Time:</strong> {event.startTime} - {event.endTime}</p>
+                  <p className="event-detail"><strong>Room:</strong> {event.room || 'TBD'}</p>
+                  {event.formDeadline && (
+                    <p className="event-detail">
+                      <strong>Form Closes:</strong> {dayjs(event.formDeadline).format('YYYY-MM-DD HH:mm')}
+                    </p>
+                  )}
                 </div>
-              ) : (
-                <p className="no-form-warning">⚠ No form template found</p>
-              )}
-            </Card>
-          </Col>
+
+                {event.formTemplate ? (
+                  <div className="button-group">
+                    <a href={`/form/${event.id}`} target="_blank" rel="noopener noreferrer">
+                      <Button className="view-form-btn" type="primary">View Form</Button>
+                    </a>
+                    <Button className="copy-link-btn" onClick={() => copyLink(event.id)}>Copy Link</Button>
+                    <Button className="edit-btn" onClick={() => openFormEditor(event)} type="dashed">Edit</Button>
+                  </div>
+                ) : (
+                  <p className="no-form-warning">⚠ No form template found</p>
+                )}
+              </Card>
+            </Col>
         ))}
       </Row>
 
@@ -196,80 +237,101 @@ const AdminEventForms = () => {
         onCancel={() => setEditModalVisible(false)}
         onOk={handleUpdate}
         okText="Save Changes"
+        className="edit-event-modal"
       >
-        <Form form={form} layout="vertical">
-          <Form.Item label="Event Title" name="title" rules={[{ required: true }]}>
-            <Input />
+        <Form form={form} layout="vertical" className="event-form">
+          <Form.Item label="Event Title" name="title" rules={[{ required: true }]} className="form-item">
+            <Input className="form-input" />
           </Form.Item>
 
-          <Form.Item label="Room / Venue" name="room" rules={[{ required: true }]}>
-            <Input />
+          <Form.Item label="Room / Venue" name="room" rules={[{ required: true }]} className="form-item">
+            <Input className="form-input" />
           </Form.Item>
 
-          <Form.Item label="Date" name="date" rules={[{ required: true }]}>
-            <DatePicker
-              className="custom-datepicker"
-              style={{ width: '100%' }}
-            />
+          <Form.Item label="Date" name="date" rules={[{ required: true }]} className="form-item">
+            <DatePicker className="custom-datepicker" style={{ width: '100%' }} />
           </Form.Item>
 
-          <Form.Item label="Start Time" name="startTime" rules={[{ required: true }]}>
-            <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} />
+          <Form.Item label="Start Time" name="startTime" rules={[{ required: true }]} className="form-item">
+            <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} className="form-timepicker" />
           </Form.Item>
 
-          <Form.Item label="End Time" name="endTime" rules={[{ required: true }]}>
-            <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} />
+          <Form.Item label="End Time" name="endTime" rules={[{ required: true }]} className="form-item">
+            <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} className="form-timepicker" />
           </Form.Item>
 
           <Form.Item
             label="Form Closes At"
             name="formDeadline"
             rules={[{ required: true, message: 'Please set the form closing time' }]}
+            className="form-item"
           >
             <DatePicker
               showTime={{ minuteStep: 10 }}
               format="YYYY-MM-DD HH:mm"
               style={{ width: '100%' }}
+              className="form-deadline-picker"
             />
           </Form.Item>
 
-      <Form.List name="customQuestions">
-        {(fields, { add, remove }) => (
-          <>
-            <label>📝 Custom Questions (for registration form)</label>
-            {fields.map(({ key, name, ...restField }) => (
-              <Space key={key} direction="vertical" style={{ display: 'block', marginBottom: 8 }}>
-                <Form.Item
-                  {...restField}
-                  name={[name, 'label']}
-                  label={`Question ${name + 1}`}
-                  rules={[{ required: true, message: 'Please input the question text' }]}
-                >
-                  <Input placeholder="e.g. What's your full name?" />
-                </Form.Item>
-
-                <Form.Item
-                  {...restField}
-                  name={[name, 'type']}
-                  label="Input Type"
-                  rules={[{ required: true, message: 'Please select an input type' }]}
-                >
-                  <Select placeholder="Select input type">
-                    <Option value="text">Text</Option>
-                    <Option value="email">Email</Option>
-                    <Option value="number">Number</Option>
-                    <Option value="checkbox">Checkbox</Option>
-                  </Select>
-                </Form.Item>
-
-                <Form.Item label="" colon={false} className="question-required-toggle">
-                  <div className="toggle-row">
-                    <span className="toggle-label">Required?</span>
+          <Form.List name="customQuestions">
+            {(fields, { add, remove }) => (
+              <div className="custom-question-list">
+                <label className="custom-question-label">📝 Custom Questions (for registration form)</label>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Space key={key} direction="vertical" className="custom-question-item" style={{ width: '100%' }}>
+                    {/* Hidden input to make sure 'required' is initialized */}
                     <Form.Item
                       {...restField}
                       name={[name, 'required']}
                       valuePropName="checked"
                       noStyle
+                    >
+                      <Input type="hidden" />
+                    </Form.Item>
+
+                    {/* Conditionally required label */}
+                    <Form.Item shouldUpdate>
+                      {({ getFieldValue }) => {
+                        const required = getFieldValue(['customQuestions', name, 'required']) ?? false;
+                        return (
+                          <Form.Item
+                            {...restField}
+                            name={[name, 'label']}
+                            label={`Question ${name + 1}`}
+                            rules={required ? [{ required: true, message: 'Please input the question text' }] : []}
+                            className="form-item"
+                          >
+                            <Input className="form-input" placeholder="e.g. What's your full name?" />
+                          </Form.Item>
+                        );
+                      }}
+                    </Form.Item>
+
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'type']}
+                      label="Input Type"
+                      colon={false}
+                      required={false}
+                      rules={[{ required: true, message: 'Please select an input type' }]}
+                      className="form-item"
+                    >
+                      <Select placeholder="Select input type" className="form-select">
+                        <Option value="text">Text</Option>
+                        <Option value="email">Email</Option>
+                        <Option value="number">Number</Option>
+                        <Option value="checkbox">Checkbox</Option>
+                      </Select>
+                    </Form.Item>
+
+                    {/* Required toggle switch */}
+                    <Form.Item
+                      {...restField}
+                      label="Required?"
+                      name={[name, 'required']}
+                      valuePropName="checked"
+                      className="form-item"
                     >
                       <Switch
                         className="custom-required-switch"
@@ -277,21 +339,21 @@ const AdminEventForms = () => {
                         unCheckedChildren="No"
                       />
                     </Form.Item>
-                  </div>
-                </Form.Item>
 
-                <Button danger type="link" onClick={() => remove(name)}>Remove</Button>
-                <hr />
-              </Space>
-            ))}
-            <Form.Item>
-              <Button type="dashed" onClick={() => add()} block>
-                + Add Question
-              </Button>
-            </Form.Item>
-          </>
-        )}
-      </Form.List>
+                    <Button danger type="link" onClick={() => remove(name)} className="remove-question-btn">
+                      Remove
+                    </Button>
+                    <hr />
+                  </Space>
+                ))}
+                <Form.Item className="add-question-container">
+                  <Button type="dashed" onClick={() => add()} block className="add-question-btn">
+                    + Add Question
+                  </Button>
+                </Form.Item>
+              </div>
+            )}
+          </Form.List>
         </Form>
       </Modal>
     </div>

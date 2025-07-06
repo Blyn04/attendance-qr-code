@@ -49,7 +49,7 @@ const RegistrationForm = () => {
       const questionKey = name.replace('custom_', '');
       setFormData(prev => ({
         ...prev,
-        customAnswers: { ...prev.customAnswers, [questionKey]: value }
+        customAnswers: { ...prev.customAnswers, [questionKey]: type === 'checkbox' ? checked : value }
       }));
     } else {
       setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
@@ -86,86 +86,132 @@ const RegistrationForm = () => {
         <p><strong>Time:</strong> {event.startTime} – {event.endTime}</p>
       </div>
 
-      <label>Full Name:</label>
-      <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} required />
+      <div className="form-group">
+        <label htmlFor="fullName">Full Name <span className="required-asterisk">*</span></label>
+        <input
+          type="text"
+          id="fullName"
+          name="fullName"
+          className="form-input"
+          value={formData.fullName}
+          onChange={handleChange}
+          required
+        />
+      </div>
 
-      <label>Email:</label>
-      <input type="email" name="email" value={formData.email} onChange={handleChange} required />
+      <div className="form-group">
+        <label htmlFor="email">Email <span className="required-asterisk">*</span></label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          className="form-input"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+      </div>
 
-      <label>Year:</label>
-      <input type="text" name="year" value={formData.year} onChange={handleChange} required />
+      <div className="form-group">
+        <label htmlFor="year">Year <span className="required-asterisk">*</span></label>
+        <input
+          type="text"
+          id="year"
+          name="year"
+          className="form-input"
+          value={formData.year}
+          onChange={handleChange}
+          required
+        />
+      </div>
 
-      <label>Section (INF###):</label>
-      <input type="text" name="section" value={formData.section} onChange={handleChange} required />
+      <div className="form-group">
+        <label htmlFor="section">Section (INF###) <span className="required-asterisk">*</span></label>
+        <input
+          type="text"
+          id="section"
+          name="section"
+          className="form-input"
+          value={formData.section}
+          onChange={handleChange}
+          required
+        />
+      </div>
 
-      {/* 🔽 Render custom questions */}
-        {customQuestions.map((q, idx) => {
-          const fieldName = `custom_${idx}`;
-          const value = formData.customAnswers?.[idx] || '';
+      {customQuestions.map((q, idx) => {
+        const fieldName = `custom_${idx}`;
+        const value = formData.customAnswers?.[idx] || '';
+        const isRequired = q.required === true;
 
-          return (
-            <div key={idx}>
-              <label>{q.label}</label>
-              {q.type === 'checkbox' ? (
-                <input
-                  type="checkbox"
-                  name={fieldName}
-                  checked={!!value}
-                  onChange={(e) => {
-                    setFormData(prev => ({
-                      ...prev,
-                      customAnswers: {
-                        ...prev.customAnswers,
-                        [idx]: e.target.checked
-                      }
-                    }));
-                  }}
-                />
-              ) : (
-                <input
-                  type={q.type || 'text'} // fallback to 'text'
-                  name={fieldName}
-                  value={value}
-                  onChange={handleChange}
-                  required
-                />
-              )}
-            </div>
-          );
-        })}
+        return (
+          <div key={idx} className="form-group custom-question">
+            <label htmlFor={fieldName}>
+              {q.label}
+              {isRequired && <span className="required-asterisk">*</span>}
+            </label>
+
+            {q.type === 'checkbox' ? (
+              <input
+                type="checkbox"
+                id={fieldName}
+                name={fieldName}
+                className="form-checkbox"
+                checked={!!value}
+                onChange={handleChange}
+                required={isRequired}
+              />
+            ) : (
+              <input
+                type={q.type || 'text'}
+                id={fieldName}
+                name={fieldName}
+                className="form-input"
+                value={value}
+                onChange={handleChange}
+                required={isRequired}
+              />
+            )}
+          </div>
+        );
+      })}
 
       <div className="checkbox-block">
         <label>
           <input
             type="checkbox"
             name="photoConsent"
+            className="form-checkbox"
             checked={formData.photoConsent}
             onChange={handleChange}
           />
-          Photo consent
+          Photo consent <span className="required-asterisk">*</span>
         </label>
+
         <label>
           <input
             type="checkbox"
             name="videoConsent"
+            className="form-checkbox"
             checked={formData.videoConsent}
             onChange={handleChange}
           />
-          Video consent
+          Video consent <span className="required-asterisk">*</span>
         </label>
+
         <label>
           <input
             type="checkbox"
             name="dataPrivacyAgreement"
+            className="form-checkbox"
             checked={formData.dataPrivacyAgreement}
             onChange={handleChange}
             required
           />
-          I agree to data privacy
+          I agree to data privacy <span className="required-asterisk">*</span>
         </label>
       </div>
 
-      <button type="submit">Submit</button>
+      <button type="submit" className="submit-btn">Submit</button>
     </form>
   );
 };
