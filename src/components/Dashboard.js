@@ -8,7 +8,14 @@ import CustomDashboardCalendar from '../customs/CustomDashboardCalendar';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../config/FirebaseConfig';
 import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from 'chart.js';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend
+} from 'chart.js';
 
 import '../styles/Dashboard.css';
 
@@ -19,6 +26,7 @@ const { TabPane } = Tabs;
 const Dashboard = () => {
   const [eventCount, setEventCount] = useState(0);
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
+  const [yearSectionData, setYearSectionData] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,11 +36,22 @@ const Dashboard = () => {
 
       const eventLabels = [];
       const registrationsCount = [];
+      const yearBreakdown = {}; // { "Event Title": { "1st Year - INF123": 5, ... } }
 
       for (const event of events) {
-        const registrationsSnap = await getDocs(collection(db, 'events', event.id, 'registrations'));
+        const regSnap = await getDocs(collection(db, 'events', event.id, 'registrations'));
         eventLabels.push(event.title);
-        registrationsCount.push(registrationsSnap.size);
+        registrationsCount.push(regSnap.size);
+
+        const yearMap = {};
+        regSnap.docs.forEach(doc => {
+          const { year, section } = doc.data();
+          if (!year) return;
+          const label = `${year} - ${section || 'No Section'}`;
+          yearMap[label] = (yearMap[label] || 0) + 1;
+        });
+
+        yearBreakdown[event.title] = yearMap;
       }
 
       setChartData({
@@ -45,6 +64,8 @@ const Dashboard = () => {
           },
         ],
       });
+
+      setYearSectionData(yearBreakdown);
     };
 
     fetchData();
@@ -74,7 +95,28 @@ const Dashboard = () => {
           <Card>
             <h3><BarChartOutlined /> Registrations Overview</h3>
             {chartData.labels.length > 0 ? (
-              <Bar data={chartData} />
+              <>
+                <Bar data={chartData} />
+
+                <div style={{ marginTop: 40 }}>
+                  {chartData.labels.map(title => (
+                    <div key={title} style={{ marginBottom: 24 }}>
+                      <h4>{title}</h4>
+                      {yearSectionData[title] ? (
+                        <ul>
+                          {Object.entries(yearSectionData[title]).map(([key, count]) => (
+                            <li key={key}>
+                              {key}: {count}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p>No registration breakdown data.</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
               <p>No data available</p>
             )}
