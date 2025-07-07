@@ -10,6 +10,9 @@ const RegistrationForm = () => {
   const [event, setEvent] = useState(null);
   const [customQuestions, setCustomQuestions] = useState([]);
   const [isClosed, setIsClosed] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [step, setStep] = useState('privacy'); // new step control
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -20,7 +23,6 @@ const RegistrationForm = () => {
     dataPrivacyAgreement: false,
     customAnswers: {}
   });
-  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     const loadEvent = async () => {
@@ -81,7 +83,6 @@ const RegistrationForm = () => {
       return;
     }
 
-    // Save to Firestore
     const docRef = await addDoc(
       collection(db, 'events', eventId, 'registrations'),
       {
@@ -90,7 +91,6 @@ const RegistrationForm = () => {
       }
     );
 
-    // ✅ Send QR email to local backend server
     await fetch('http://localhost:3001/send-qr', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -98,16 +98,52 @@ const RegistrationForm = () => {
         email: formData.email,
         fullName: formData.fullName,
         eventTitle: event.title,
-        qrData: docRef.id // Use Firestore doc ID as QR content
+        qrData: docRef.id
       })
     });
 
     setSubmitted(true);
   };
 
+  const renderPrivacyPage = () => (
+    <div className="form-container">
+      <h2>Data Privacy Agreement</h2>
+      <div className="event-info-box">
+        <p>
+          By proceeding, you agree that your submitted personal data will be used solely for this event's
+          registration, attendance, and communication purposes in compliance with the Data Privacy Act of 2012.
+        </p>
+        <p>
+          Your data will be handled securely and will not be shared with unauthorized third parties.
+        </p>
+
+        <label className="privacy-checkbox">
+          <input
+            type="checkbox"
+            checked={formData.dataPrivacyAgreement}
+            onChange={(e) => {
+              const checked = e.target.checked;
+              setFormData(prev => ({ ...prev, dataPrivacyAgreement: checked }));
+            }}
+          />
+          I agree to the data privacy terms
+        </label>
+
+        <button
+          className="submit-btn"
+          disabled={!formData.dataPrivacyAgreement}
+          onClick={() => setStep('form')}
+        >
+          Continue to Registration
+        </button>
+      </div>
+    </div>
+  );
+
   if (!event) return <p>Loading event...</p>;
   if (isClosed) return <h2>Registration for {event.title} is now closed.</h2>;
   if (submitted) return <h2>Thanks for registering for {event.title}!</h2>;
+  if (step === 'privacy') return renderPrivacyPage();
 
   return (
     <form onSubmit={handleSubmit} className="form-container">
@@ -146,9 +182,7 @@ const RegistrationForm = () => {
       </div>
 
       <div className="form-group">
-        <label htmlFor="year">
-          Year <span className="required-asterisk">*</span>
-        </label>
+        <label htmlFor="year">Year <span className="required-asterisk">*</span></label>
         <select
           id="year"
           name="year"
@@ -166,9 +200,7 @@ const RegistrationForm = () => {
       </div>
 
       <div className="form-group">
-        <label htmlFor="section">
-          Section (INF###) <span className="required-asterisk">*</span>
-        </label>
+        <label htmlFor="section">Section (INF###) <span className="required-asterisk">*</span></label>
         <input
           type="text"
           id="section"
@@ -244,18 +276,6 @@ const RegistrationForm = () => {
             onChange={handleChange}
           />
           Video consent <span className="required-asterisk">*</span>
-        </label>
-
-        <label>
-          <input
-            type="checkbox"
-            name="dataPrivacyAgreement"
-            className="form-checkbox"
-            checked={formData.dataPrivacyAgreement}
-            onChange={handleChange}
-            required
-          />
-          I agree to data privacy <span className="required-asterisk">*</span>
         </label>
       </div>
 
