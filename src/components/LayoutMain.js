@@ -85,7 +85,19 @@ const LayoutMain = () => {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider breakpoint="lg" collapsedWidth="0">
+      {/* Fixed Sidebar */}
+      <Sider
+        width={200}
+        breakpoint="lg"
+        collapsedWidth="0"
+        style={{
+          position: 'fixed',
+          height: '100vh',
+          left: 0,
+          top: 0,
+          zIndex: 1000,
+        }}
+      >
         <div className="sidebar-logo">
           <img src={jpcsLogo} alt="JPCS Logo" />
           <div className="logo-text">JPCS - NU MOA</div>
@@ -100,10 +112,24 @@ const LayoutMain = () => {
         />
       </Sider>
 
-      <Layout>
-        <CustomHeader title={currentTitle} />
+      {/* Content area shifted by sidebar width */}
+      <Layout style={{ marginLeft: 200 }}>
+        {/* Fixed Header */}
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 200,
+            right: 0,
+            zIndex: 999,
+            background: colorBgContainer,
+          }}
+        >
+          <CustomHeader title={currentTitle} />
+        </div>
 
-        <Content style={{ margin: '24px 16px 0' }}>
+        {/* Content below fixed header */}
+        <Content style={{ marginTop: 64, padding: '24px 16px 0' }}>
           <div
             style={{
               padding: 24,

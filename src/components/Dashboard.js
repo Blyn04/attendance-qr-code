@@ -97,7 +97,7 @@ const Dashboard = () => {
             {chartData.labels.length > 0 ? (
               <>
                 <Bar data={chartData} />
-
+{/* 
                 <div style={{ marginTop: 40 }}>
                   {chartData.labels.map(title => (
                     <div key={title} style={{ marginBottom: 24 }}>
@@ -115,7 +115,7 @@ const Dashboard = () => {
                       )}
                     </div>
                   ))}
-                </div>
+                </div> */}
               </>
             ) : (
               <p>No data available</p>
