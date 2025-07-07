@@ -27,19 +27,24 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* PUBLIC ROUTES */}
-        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route
+          path="/"
+          element={
+            user ? <Navigate to="/dashboard" replace /> : <Login />
+          }
+        />
         <Route path="/form/:eventId" element={<RegistrationForm />} />
 
-        {/* PROTECTED ROUTES */}
+        {/* PROTECTED ROUTES WRAPPED WITH LayoutMain */}
         {user && (
           <Route path="/" element={<LayoutMain />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/events" element={<div />} />
-            <Route path="/admin/manage-forms" element={<AdminEventForms />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="events" element={<div />} />
+            <Route path="admin/manage-forms" element={<AdminEventForms />} />
           </Route>
         )}
 
-        {/* Redirect everything else */}
+        {/* REDIRECT UNKNOWN ROUTES */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
