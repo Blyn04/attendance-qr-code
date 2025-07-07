@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LogoutOutlined,
@@ -6,14 +6,14 @@ import {
   CalendarOutlined,
   EditOutlined,
 } from '@ant-design/icons';
-import { Layout, Menu, theme } from 'antd';
+import { Layout, Menu, theme, Modal, Button } from 'antd';
 import AdminEvents from './AdminEvents';
 import AdminEventForms from './AdminEventForms';
 import Dashboard from './Dashboard';
 import CustomHeader from '../customs/CustomHeader';
 import jpcsLogo from '../assets/jpcs.png';
 import { signOut } from 'firebase/auth';
-import { auth } from '../config/FirebaseConfig'; // ✅ make sure this is correct
+import { auth } from '../config/FirebaseConfig';
 import '../styles/LayoutMain.css';
 
 const { Content, Footer, Sider } = Layout;
@@ -44,6 +44,7 @@ const items = [
 const LayoutMain = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [logoutVisible, setLogoutVisible] = useState(false); // ✅ custom modal state
 
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -67,12 +68,18 @@ const LayoutMain = () => {
     } else if (e.key === '4') {
       navigate('/admin/manage-forms');
     } else if (e.key === '3') {
-      try {
-        await signOut(auth);
-        navigate('/'); // 🔐 redirect to login
-      } catch (err) {
-        console.error('Sign out error:', err);
-      }
+      setLogoutVisible(true); // ✅ open modal
+    }
+  };
+
+  const confirmLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate('/');
+    } catch (err) {
+      console.error('Sign out error:', err);
+    } finally {
+      setLogoutVisible(false);
     }
   };
 
@@ -147,6 +154,20 @@ const LayoutMain = () => {
           Created by Blyn
         </Footer>
       </Layout>
+
+      {/* ✅ Custom Logout Modal */}
+      <Modal
+        title="Confirm Logout"
+        open={logoutVisible}
+        onOk={confirmLogout}
+        onCancel={() => setLogoutVisible(false)}
+        okText="Logout"
+        okButtonProps={{ danger: true }}
+        cancelText="Cancel"
+        centered
+      >
+        <p>Are you sure you want to log out?</p>
+      </Modal>
     </Layout>
   );
 };
