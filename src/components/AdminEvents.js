@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../config/FirebaseConfig';
 import { collection, addDoc, getDocs, doc, setDoc, onSnapshot } from 'firebase/firestore';
 import {
-  Card, Row, Col, Tag, Avatar, Modal, Button,
+  Card, Row, Col, Tag, Avatar, Modal, Button, Progress,
   Input, TimePicker, message, Form, Tabs, DatePicker,
 } from 'antd';
+import {
+  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
 import dayjs from 'dayjs';
 import '../styles/AdminEvents.css';
 
@@ -50,6 +53,23 @@ const AdminEvents = () => {
     const regList = regSnapshot.docs.map(doc => doc.data());
     setRegistrations(regList);
   };
+
+  const getAnalytics = () => {
+    const yearCounts = {};
+    const sectionCounts = {};
+
+    registrations.forEach((reg) => {
+      const year = reg.year?.trim() || 'Unknown';
+      const section = reg.section?.trim() || 'Unknown';
+
+      yearCounts[year] = (yearCounts[year] || 0) + 1;
+      sectionCounts[section] = (sectionCounts[section] || 0) + 1;
+    });
+
+    return { yearCounts, sectionCounts };
+  };
+
+  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#00C49F', '#FFBB28'];
 
   return (
     <div className="admin-container">
@@ -224,7 +244,58 @@ const AdminEvents = () => {
             {
               key: '4',
               label: 'Analytics',
-              children: <div>📊 Analytics will be shown here</div>,
+              children: (() => {
+                const { yearCounts, sectionCounts } = getAnalytics();
+
+                const yearData = Object.entries(yearCounts).map(([key, value]) => ({
+                  name: key,
+                  value,
+                }));
+
+                const sectionData = Object.entries(sectionCounts).map(([key, value]) => ({
+                  name: key,
+                  value,
+                }));
+
+                const total = registrations.length || 1;
+
+                return (
+                  <div style={{ maxHeight: 500, overflowY: 'auto' }}>
+                    <h4>📚 Registrations by Section (Pie Chart)</h4>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <PieChart>
+                        <Pie
+                          data={sectionData}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label
+                        >
+                          {sectionData.map((_, index) => (
+                            <Cell key={`section-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+
+                    <h4 style={{ marginTop: 32 }}>📈 Registrations by Year (Progress)</h4>
+                    {yearData.map((item, index) => (
+                      <div key={`year-${item.name}`} style={{ marginBottom: 10 }}>
+                        <strong>{item.name}</strong>
+                        <Progress
+                          percent={((item.value / total) * 100).toFixed(1)}
+                          strokeColor={COLORS[index % COLORS.length]}
+                          format={percent => `${percent}%`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                );
+              })(),
             },
           ]}
         />
