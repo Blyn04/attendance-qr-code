@@ -131,6 +131,7 @@ const LayoutMain = () => {
         {/* Content below fixed header */}
         <Content style={{ marginTop: 64, padding: '24px 16px 0' }}>
           <div
+            className="fade-in"
             style={{
               padding: 24,
               minHeight: 'calc(100vh - 134px)',
