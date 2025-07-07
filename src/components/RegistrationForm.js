@@ -21,6 +21,7 @@ const RegistrationForm = () => {
     photoConsent: false,
     videoConsent: false,
     dataPrivacyAgreement: false,
+    sendCopy: false, // ✅ added
     customAnswers: {}
   });
 
@@ -98,7 +99,9 @@ const RegistrationForm = () => {
         email: formData.email,
         fullName: formData.fullName,
         eventTitle: event.title,
-        qrData: docRef.id
+        qrData: docRef.id,
+        sendCopy: formData.sendCopy,
+        formSummary: formData
       })
     });
 
@@ -276,6 +279,19 @@ const RegistrationForm = () => {
             onChange={handleChange}
           />
           Video consent <span className="required-asterisk">*</span>
+        </label>
+      </div>
+
+      <div className="form-group">
+        <label>
+          <input
+            type="checkbox"
+            name="sendCopy"
+            className="form-checkbox"
+            checked={formData.sendCopy || false}
+            onChange={(e) => setFormData(prev => ({ ...prev, sendCopy: e.target.checked }))}
+          />
+          Email me a copy of my registration
         </label>
       </div>
 
