@@ -4,6 +4,7 @@ import { db } from '../config/FirebaseConfig';
 import { collection, doc, getDoc, addDoc } from 'firebase/firestore';
 import '../styles/RegistrationForm.css';
 import dayjs from 'dayjs';
+import logo from '../assets/jpcs.png';
 
 const RegistrationForm = () => {
   const { eventId } = useParams();
@@ -143,9 +144,34 @@ const RegistrationForm = () => {
     </div>
   );
 
-  if (!event) return <p>Loading event...</p>;
-  if (isClosed) return <h2>Registration for {event.title} is now closed.</h2>;
-  if (submitted) return <h2>Thanks for registering for {event.title}!</h2>;
+  if (!event) return (
+    <div className="centered-message">
+      <img src={logo} alt="Logo" className="message-logo" />
+      <div className="message-box">
+        <p>Loading event...</p>
+      </div>
+    </div>
+  );
+
+  if (isClosed) return (
+    <div className="centered-message">
+      <img src={logo} alt="Logo" className="message-logo" />
+      <div className="message-box">
+        <h2>Registration for {event.title} is now closed.</h2>
+      </div>
+    </div>
+  );
+
+  if (submitted) return (
+    <div className="centered-message">
+      <img src={logo} alt="Logo" className="message-logo" />
+      <div className="message-box">
+        <h2>Thanks for registering for {event.title}!</h2>
+        <p>You should receive a QR code and a summary in your email shortly.</p>
+      </div>
+    </div>
+  );
+
   if (step === 'privacy') return renderPrivacyPage();
 
   return (

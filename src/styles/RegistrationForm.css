@@ -118,6 +118,33 @@ input[type="email"]:focus,
   background-color: var(--primary-dark);
 }
 
+.centered-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  text-align: center;
+  background-color: #fefefe;
+  padding: 2rem;
+}
+
+.message-box {
+  background: #fff;
+  border: 2px solid var(--accent, #7c5132);
+  padding: 2rem 3rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  max-width: 500px;
+  margin-top: 1.5rem;
+}
+
+.message-logo {
+  width: 250px;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
 /* Responsive Fixes */
 @media (max-width: 768px) {
   .form-container {
