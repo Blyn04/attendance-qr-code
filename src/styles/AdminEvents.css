@@ -160,3 +160,43 @@
 .ant-modal-footer .ant-btn {
   min-width: 100px; /* Optional: consistent button width */
 }
+
+/* === Registrations Tab Styling === */
+
+.registration-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0;
+  list-style: none;
+  margin-top: 12px;
+}
+
+.registration-list li {
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background-color: #f9f7ff;
+  border: 1px solid #e6e3f9;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.registration-list li:hover {
+  background-color: #f0ebff;
+}
+
+.registration-list strong {
+  color: #3f2a8a;
+  font-weight: 600;
+}
+
+.registration-list small {
+  color: #666;
+}
+
+/* Title for section inside modal */
+.modal-section-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}

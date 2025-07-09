@@ -225,13 +225,14 @@ const AdminEvents = () => {
                   {registrations.length === 0 ? (
                     <p>No one has registered yet.</p>
                   ) : (
-                    <ul style={{ maxHeight: 300, overflowY: 'auto' }}>
-                      {registrations.map((reg, idx) => (
-                        <li key={idx}>
-                          <strong>{reg.fullName}</strong> ({reg.email})
-                        </li>
-                      ))}
-                    </ul>
+                  <ul className="registration-list">
+                    {registrations.map((reg, idx) => (
+                      <li key={idx}>
+                        <strong>{reg.fullName}</strong> <br />
+                        <small>{reg.email}</small>
+                      </li>
+                    ))}
+                  </ul>
                   )}
                 </div>
               ),
