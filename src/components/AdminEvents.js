@@ -21,6 +21,7 @@ const AdminEvents = () => {
   const [endTime, setEndTime] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [searchText, setSearchText] = useState('');
+  const [searchText1, setSearchText1] = useState('');
   const [registrations, setRegistrations] = useState([]);
   const [form] = Form.useForm();
 
@@ -217,7 +218,7 @@ const AdminEvents = () => {
                 </div>
               ),
             },
-           {
+            {
               key: '2',
               label: `Registrations (${registrations.length})`,
               children: (
@@ -225,14 +226,27 @@ const AdminEvents = () => {
                   {registrations.length === 0 ? (
                     <p>No one has registered yet.</p>
                   ) : (
-                  <ul className="registration-list">
-                    {registrations.map((reg, idx) => (
-                      <li key={idx}>
-                        <strong>{reg.fullName}</strong> <br />
-                        <small>{reg.email}</small>
-                      </li>
-                    ))}
-                  </ul>
+                    <>
+                      <Input.Search
+                        placeholder="Search by name or email"
+                        allowClear
+                        onChange={(e) => setSearchText1(e.target.value)}
+                        style={{ maxWidth: 300, marginBottom: 12 }}
+                      />
+                      <ul className="registration-list">
+                        {registrations
+                          .filter(reg =>
+                            reg.fullName?.toLowerCase().includes(searchText1.toLowerCase()) ||
+                            reg.email?.toLowerCase().includes(searchText1.toLowerCase())
+                          )
+                          .map((reg, idx) => (
+                            <li key={idx}>
+                              <strong>{reg.fullName}</strong> <br />
+                              <small>{reg.email}</small>
+                            </li>
+                          ))}
+                      </ul>
+                    </>
                   )}
                 </div>
               ),
