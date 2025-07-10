@@ -378,25 +378,75 @@ const AdminEvents = () => {
       >
         {selectedRegistrant ? (
           <div>
-            {Object.entries(selectedRegistrant).map(([key, value]) => {
-              let displayValue;
+            {(() => {
+              const defaultKeys = [
+                'fullName',
+                'email',
+                'year',
+                'section',
+                'photoConsent',
+                'videoConsent',
+                'agreeToDataPrivacyPolicy',
+              ];
 
-              if (typeof value === 'boolean') {
-                displayValue = value ? '✔️ Yes' : '❌ No';
-              } else if (Array.isArray(value)) {
-                displayValue = value.join(', ');
-              } else if (typeof value === 'object' && value !== null) {
-                displayValue = JSON.stringify(value); // Or show "Object"
-              } else {
-                displayValue = value;
-              }
+              const defaultFields = [];
+              const customFields = [];
+
+              Object.entries(selectedRegistrant).forEach(([key, value]) => {
+                let displayValue;
+
+                if (typeof value === 'boolean') {
+                  displayValue = value ? '✔️ Yes' : '❌ No';
+
+                } else if (Array.isArray(value)) {
+                  displayValue = value.join(', ');
+
+                } else if (typeof value === 'object' && value !== null) {
+                  // Handle Firestore Timestamps
+                  if ('seconds' in value && 'nanoseconds' in value) {
+                    displayValue = new Date(value.seconds * 1000).toLocaleString();
+
+                  } else {
+                    // Safely stringify other objects
+                    displayValue = JSON.stringify(value, null, 2);
+                  }
+
+                } else {
+                  displayValue = value;
+                }
+
+                const formattedKey = key
+                  .replace(/([A-Z])/g, ' $1')
+                  .replace(/^./, str => str.toUpperCase());
+
+                const item = (
+                  <div key={key} style={{ marginBottom: 10 }}>
+                    <strong>{formattedKey}:</strong> {displayValue}
+                  </div>
+                );
+
+                if (defaultKeys.includes(key)) {
+                  defaultFields.push(item);
+
+                } else {
+                  customFields.push(item);
+                }
+              });
 
               return (
-                <div key={key} style={{ marginBottom: 10 }}>
-                  <strong>{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:</strong> {displayValue}
-                </div>
+                <>
+                  <h4>📝 Basic Details</h4>
+                  {defaultFields}
+
+                  {customFields.length > 0 && (
+                    <>
+                      <h4 style={{ marginTop: 20 }}>🧩 Custom Questions</h4>
+                      {customFields}
+                    </>
+                  )}
+                </>
               );
-            })}
+            })()}
           </div>
         ) : (
           <p>No data found.</p>
