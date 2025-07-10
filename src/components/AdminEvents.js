@@ -4,12 +4,15 @@ import { collection, addDoc, getDocs, doc, setDoc, onSnapshot } from 'firebase/f
 import {
   Card, Row, Col, Tag, Avatar, Modal, Button, Progress,
   Input, TimePicker, message, Form, Tabs, DatePicker,
+  Select,
 } from 'antd';
 import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import dayjs from 'dayjs';
 import '../styles/AdminEvents.css';
+
+const { Option } = Select
 
 const AdminEvents = () => {
   const [events, setEvents] = useState([]);
@@ -231,49 +234,56 @@ const AdminEvents = () => {
                     <p>No one has registered yet.</p>
                   ) : (
                     <>
-                      <div className="registration-filters">
-                        <Input.Search
-                          placeholder="Search by name or email"
-                          allowClear
-                          onChange={(e) => setSearchText1(e.target.value)}
-                          className="ant-input-search"
-                          style={{ maxWidth: 300 }}
-                        />
+                    <div className="registration-filters">
+                      <Input.Search
+                        placeholder="Search by name or email"
+                        allowClear
+                        onChange={(e) => setSearchText1(e.target.value)}
+                        className="ant-input-search"
+                        style={{ maxWidth: 300 }}
+                      />
 
-                        <select
-                          value={selectedYearFilter}
-                          onChange={(e) => setSelectedYearFilter(e.target.value)}
-                        >
-                          <option value="">All Years</option>
-                          {[...new Set(registrations.map((r) => r.year?.trim()).filter(Boolean))].map((year, idx) => (
-                            <option key={idx} value={year}>{year}</option>
-                          ))}
-                        </select>
+                      <Select
+                        value={selectedYearFilter}
+                        onChange={(value) => setSelectedYearFilter(value)}
+                        style={{ width: 150 }}
+                        placeholder="Filter by Year"
+                        allowClear
+                      >
+                        {[...new Set(registrations.map((r) => r.year?.trim()).filter(Boolean))].map((year, idx) => (
+                          <Option key={idx} value={year}>{year}</Option>
+                        ))}
+                      </Select>
 
-                        <select
-                          value={selectedSectionFilter}
-                          onChange={(e) => setSelectedSectionFilter(e.target.value)}
-                        >
-                          <option value="">All Sections</option>
-                          {[...new Set(registrations.map((r) => r.section?.trim()).filter(Boolean))].map((section, idx) => (
-                            <option key={idx} value={section}>{section}</option>
-                          ))}
-                        </select>
-                      </div>
-
+                      <Select
+                        value={selectedSectionFilter}
+                        onChange={(value) => setSelectedSectionFilter(value)}
+                        style={{ width: 180 }}
+                        placeholder="Filter by Section"
+                        allowClear
+                      >
+                        {[...new Set(registrations.map((r) => r.section?.trim()).filter(Boolean))].map((section, idx) => (
+                          <Option key={idx} value={section}>{section}</Option>
+                        ))}
+                      </Select>
+                    </div>
                       <ul className="registration-list">
                         {registrations
                           .filter(reg =>
                             (reg.fullName?.toLowerCase().includes(searchText1.toLowerCase()) ||
                             reg.email?.toLowerCase().includes(searchText1.toLowerCase())) &&
-                            (selectedYearFilter === '' || reg.year?.trim() === selectedYearFilter) &&
-                            (selectedSectionFilter === '' || reg.section?.trim() === selectedSectionFilter)
+                            (!selectedYearFilter || reg.year?.trim() === selectedYearFilter) &&
+                            (!selectedSectionFilter || reg.section?.trim() === selectedSectionFilter)
                           )
                           .map((reg, idx) => (
-                            <li key={idx} onClick={() => {
-                              setSelectedRegistrant(reg);
-                              setShowRegistrantModal(true);
-                            }} style={{ cursor: 'pointer' }}>
+                            <li
+                              key={idx}
+                              onClick={() => {
+                                setSelectedRegistrant(reg);
+                                setShowRegistrantModal(true);
+                              }}
+                              style={{ cursor: 'pointer' }}
+                            >
                               <strong>{reg.fullName}</strong> <br />
                               <small>{reg.email}</small>
                             </li>
