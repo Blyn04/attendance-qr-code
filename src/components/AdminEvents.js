@@ -25,6 +25,8 @@ const AdminEvents = () => {
   const [registrations, setRegistrations] = useState([]);
   const [selectedRegistrant, setSelectedRegistrant] = useState(null);
   const [showRegistrantModal, setShowRegistrantModal] = useState(false);
+  const [selectedYearFilter, setSelectedYearFilter] = useState('');
+  const [selectedSectionFilter, setSelectedSectionFilter] = useState('');
   const [form] = Form.useForm();
 
   const fetchEvents = async () => {
@@ -235,11 +237,39 @@ const AdminEvents = () => {
                         onChange={(e) => setSearchText1(e.target.value)}
                         style={{ maxWidth: 300, marginBottom: 12 }}
                       />
+
+                      {/* 🔽 New filters */}
+                      <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                        <select
+                          value={selectedYearFilter}
+                          onChange={(e) => setSelectedYearFilter(e.target.value)}
+                          style={{ padding: '4px 8px' }}
+                        >
+                          <option value="">All Years</option>
+                          {[...new Set(registrations.map((r) => r.year?.trim()).filter(Boolean))].map((year, idx) => (
+                            <option key={idx} value={year}>{year}</option>
+                          ))}
+                        </select>
+
+                        <select
+                          value={selectedSectionFilter}
+                          onChange={(e) => setSelectedSectionFilter(e.target.value)}
+                          style={{ padding: '4px 8px' }}
+                        >
+                          <option value="">All Sections</option>
+                          {[...new Set(registrations.map((r) => r.section?.trim()).filter(Boolean))].map((section, idx) => (
+                            <option key={idx} value={section}>{section}</option>
+                          ))}
+                        </select>
+                      </div>
+
                       <ul className="registration-list">
                         {registrations
                           .filter(reg =>
-                            reg.fullName?.toLowerCase().includes(searchText1.toLowerCase()) ||
-                            reg.email?.toLowerCase().includes(searchText1.toLowerCase())
+                            (reg.fullName?.toLowerCase().includes(searchText1.toLowerCase()) ||
+                            reg.email?.toLowerCase().includes(searchText1.toLowerCase())) &&
+                            (selectedYearFilter === '' || reg.year?.trim() === selectedYearFilter) &&
+                            (selectedSectionFilter === '' || reg.section?.trim() === selectedSectionFilter)
                           )
                           .map((reg, idx) => (
                             <li key={idx} onClick={() => {
