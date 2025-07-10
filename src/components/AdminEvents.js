@@ -23,6 +23,8 @@ const AdminEvents = () => {
   const [searchText, setSearchText] = useState('');
   const [searchText1, setSearchText1] = useState('');
   const [registrations, setRegistrations] = useState([]);
+  const [selectedRegistrant, setSelectedRegistrant] = useState(null);
+  const [showRegistrantModal, setShowRegistrantModal] = useState(false);
   const [form] = Form.useForm();
 
   const fetchEvents = async () => {
@@ -240,7 +242,10 @@ const AdminEvents = () => {
                             reg.email?.toLowerCase().includes(searchText1.toLowerCase())
                           )
                           .map((reg, idx) => (
-                            <li key={idx}>
+                            <li key={idx} onClick={() => {
+                              setSelectedRegistrant(reg);
+                              setShowRegistrantModal(true);
+                            }} style={{ cursor: 'pointer' }}>
                               <strong>{reg.fullName}</strong> <br />
                               <small>{reg.email}</small>
                             </li>
@@ -360,6 +365,44 @@ const AdminEvents = () => {
             </Col>
           ))}
       </Row>
+
+      <Modal
+        open={showRegistrantModal}
+        onCancel={() => {
+          setShowRegistrantModal(false);
+          setSelectedRegistrant(null);
+        }}
+        footer={null}
+        title={selectedRegistrant?.fullName || "Registrant Details"}
+        width={600}
+      >
+        {selectedRegistrant ? (
+          <div>
+            {Object.entries(selectedRegistrant).map(([key, value]) => {
+              let displayValue;
+
+              if (typeof value === 'boolean') {
+                displayValue = value ? '✔️ Yes' : '❌ No';
+              } else if (Array.isArray(value)) {
+                displayValue = value.join(', ');
+              } else if (typeof value === 'object' && value !== null) {
+                displayValue = JSON.stringify(value); // Or show "Object"
+              } else {
+                displayValue = value;
+              }
+
+              return (
+                <div key={key} style={{ marginBottom: 10 }}>
+                  <strong>{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:</strong> {displayValue}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p>No data found.</p>
+        )}
+      </Modal>
+
     </div>
   );
 };

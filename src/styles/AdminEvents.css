@@ -204,3 +204,11 @@
 .registration-list {
   margin-top: 8px;
 }
+
+/* Registrant Modal Styling */
+.ant-modal .ant-modal-body div strong {
+  display: inline-block;
+  width: 180px;
+  color: #1d1b5b;
+}
+
