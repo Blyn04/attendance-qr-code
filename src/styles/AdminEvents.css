@@ -212,3 +212,17 @@
   color: #1d1b5b;
 }
 
+.registration-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.registration-filters select,
+.registration-filters .ant-input-search {
+  height: 32px;
+  padding: 4px 8px;
+}
+

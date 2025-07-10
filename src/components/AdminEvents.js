@@ -231,19 +231,18 @@ const AdminEvents = () => {
                     <p>No one has registered yet.</p>
                   ) : (
                     <>
-                      <Input.Search
-                        placeholder="Search by name or email"
-                        allowClear
-                        onChange={(e) => setSearchText1(e.target.value)}
-                        style={{ maxWidth: 300, marginBottom: 12 }}
-                      />
+                      <div className="registration-filters">
+                        <Input.Search
+                          placeholder="Search by name or email"
+                          allowClear
+                          onChange={(e) => setSearchText1(e.target.value)}
+                          className="ant-input-search"
+                          style={{ maxWidth: 300 }}
+                        />
 
-                      {/* 🔽 New filters */}
-                      <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
                         <select
                           value={selectedYearFilter}
                           onChange={(e) => setSelectedYearFilter(e.target.value)}
-                          style={{ padding: '4px 8px' }}
                         >
                           <option value="">All Years</option>
                           {[...new Set(registrations.map((r) => r.year?.trim()).filter(Boolean))].map((year, idx) => (
@@ -254,7 +253,6 @@ const AdminEvents = () => {
                         <select
                           value={selectedSectionFilter}
                           onChange={(e) => setSelectedSectionFilter(e.target.value)}
-                          style={{ padding: '4px 8px' }}
                         >
                           <option value="">All Sections</option>
                           {[...new Set(registrations.map((r) => r.section?.trim()).filter(Boolean))].map((section, idx) => (
