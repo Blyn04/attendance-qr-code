@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../config/FirebaseConfig';
-import { collection, addDoc, getDocs, doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, setDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import {
   Card, Row, Col, Tag, Avatar, Modal, Button, Progress,
   Input, TimePicker, message, Form, Tabs, DatePicker,
@@ -30,6 +30,8 @@ const AdminEvents = () => {
   const [showRegistrantModal, setShowRegistrantModal] = useState(false);
   const [selectedYearFilter, setSelectedYearFilter] = useState('');
   const [selectedSectionFilter, setSelectedSectionFilter] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingRegistrant, setDeletingRegistrant] = useState(null);
   const [form] = Form.useForm();
 
   const fetchEvents = async () => {
@@ -58,7 +60,8 @@ const AdminEvents = () => {
     setSelectedEvent(event);
 
     const regSnapshot = await getDocs(collection(db, 'events', event.id, 'registrations'));
-    const regList = regSnapshot.docs.map(doc => doc.data());
+    // const regList = regSnapshot.docs.map(doc => doc.data());
+    const regList = regSnapshot.docs.map(doc => ({ firestoreId: doc.id, ...doc.data() }));
     setRegistrations(regList);
   };
 
@@ -75,6 +78,29 @@ const AdminEvents = () => {
     });
 
     return { yearCounts, sectionCounts };
+  };
+
+  const handleDeleteRegistrant = (reg) => {
+    if (!selectedEvent) return;
+
+    Modal.confirm({
+      title: `Delete registration for ${reg.fullName}?`,
+      content: 'This action cannot be undone.',
+      okText: 'Delete',
+      okType: 'danger',
+      cancelText: 'Cancel',
+      onOk: async () => {
+        try {
+          const regRef = doc(db, 'events', selectedEvent.id, 'registrations', reg.firestoreId);
+          await deleteDoc(regRef);
+          message.success('Registrant deleted');
+          setRegistrations(prev => prev.filter(r => r.firestoreId !== reg.firestoreId));
+        } catch (err) {
+          console.error(err);
+          message.error('Failed to delete registrant.');
+        }
+      },
+    });
   };
 
   const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#00C49F', '#FFBB28'];
@@ -276,16 +302,27 @@ const AdminEvents = () => {
                             (!selectedSectionFilter || reg.section?.trim() === selectedSectionFilter)
                           )
                           .map((reg, idx) => (
-                            <li
-                              key={idx}
-                              onClick={() => {
+                            <li key={idx} className="registration-item">
+                              <div onClick={() => {
                                 setSelectedRegistrant(reg);
                                 setShowRegistrantModal(true);
-                              }}
-                              style={{ cursor: 'pointer' }}
-                            >
-                              <strong>{reg.fullName}</strong> <br />
-                              <small>{reg.email}</small>
+                              }} style={{ cursor: 'pointer', flex: 1 }}>
+                                <strong>{reg.fullName}</strong><br />
+                                <small>{reg.email}</small>
+                              </div>
+
+                              <Button
+                                danger
+                                size="small"
+                                style={{ marginLeft: 12 }}
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent modal open
+                                  setDeletingRegistrant(reg);
+                                  setShowDeleteConfirm(true);
+                                }}
+                              >
+                                Delete
+                              </Button>
                             </li>
                           ))}
                       </ul>
@@ -489,6 +526,37 @@ const AdminEvents = () => {
         ) : (
           <p>No data found.</p>
         )}
+      </Modal>
+
+      <Modal
+        open={showDeleteConfirm}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setDeletingRegistrant(null);
+        }}
+        onOk={async () => {
+          try {
+            if (!selectedEvent || !deletingRegistrant?.firestoreId) return;
+
+            const regRef = doc(db, 'events', selectedEvent.id, 'registrations', deletingRegistrant.firestoreId);
+            await deleteDoc(regRef);
+
+            message.success('Registrant deleted');
+            setRegistrations(prev => prev.filter(r => r.firestoreId !== deletingRegistrant.firestoreId));
+          } catch (err) {
+            console.error(err);
+            message.error('Failed to delete registrant.');
+          } finally {
+            setShowDeleteConfirm(false);
+            setDeletingRegistrant(null);
+          }
+        }}
+        okText="Delete"
+        okType="danger"
+        cancelText="Cancel"
+        title={`Confirm Deletion`}
+      >
+        <p>Are you sure you want to delete the registration for <strong>{deletingRegistrant?.fullName}</strong>?</p>
       </Modal>
 
     </div>
