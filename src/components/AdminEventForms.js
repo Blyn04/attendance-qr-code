@@ -487,6 +487,7 @@ const AdminEventForms = () => {
       formDeadline: defaultDeadline,
       customQuestions: event.formTemplate?.customQuestions || [],
     });
+    
     setEditModalVisible(true);
   };
 
@@ -495,6 +496,7 @@ const AdminEventForms = () => {
       await deleteDoc(doc(db, 'events', eventId));
       await deleteDoc(doc(db, 'events', eventId, 'form', 'template'));
       message.success('Event deleted successfully');
+
     } catch (error) {
       console.error('Error deleting event:', error);
       message.error('Failed to delete event');
@@ -537,6 +539,7 @@ const AdminEventForms = () => {
       const cleanObject = (obj) => {
         if (Array.isArray(obj)) {
           return obj.map(cleanObject).filter((item) => item !== undefined && item !== null);
+
         } else if (obj && typeof obj === 'object') {
           const cleaned = {};
           for (const [key, value] of Object.entries(obj)) {
@@ -546,6 +549,7 @@ const AdminEventForms = () => {
             }
           }
           return cleaned;
+
         } else if (obj !== undefined) {
           return obj;
         }

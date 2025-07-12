@@ -27,23 +27,29 @@ const Login = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate("/dashboard");
+      
     } catch (err) {
       switch (err.code) {
         case "auth/user-not-found":
           setError("No account found with that email.");
           break;
+
         case "auth/wrong-password":
           setError("Incorrect password. Please try again.");
           break;
+
         case "auth/invalid-email":
           setError("Invalid email format.");
           break;
+
         case "auth/too-many-requests":
           setError("Too many failed attempts. Please try again later.");
           break;
+
         default:
           setError("Login failed: " + err.message);
       }
+
     } finally {
       setLoading(false);
     }
@@ -61,6 +67,7 @@ const Login = () => {
     try {
       await sendPasswordResetEmail(auth, resetEmail);
       setResetMessage("Password reset email sent!");
+
     } catch (error) {
       setResetMessage("Error: " + error.message);
     }
@@ -120,7 +127,6 @@ const Login = () => {
         </button>
       </form>
 
-      {/* Forgot Password Modal */}
       {modalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">

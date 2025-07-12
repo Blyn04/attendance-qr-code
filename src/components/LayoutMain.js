@@ -63,12 +63,15 @@ const LayoutMain = () => {
   const handleMenuClick = async (e) => {
     if (e.key === '0') {
       navigate('/dashboard');
+      
     } else if (e.key === '2') {
       navigate('/events');
+
     } else if (e.key === '4') {
       navigate('/admin/manage-forms');
+
     } else if (e.key === '3') {
-      setLogoutVisible(true); // ✅ open modal
+      setLogoutVisible(true); 
     }
   };
 
@@ -76,8 +79,10 @@ const LayoutMain = () => {
     try {
       await signOut(auth);
       navigate('/');
+
     } catch (err) {
       console.error('Sign out error:', err);
+
     } finally {
       setLogoutVisible(false);
     }
@@ -92,7 +97,6 @@ const LayoutMain = () => {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      {/* Fixed Sidebar */}
       <Sider
         width={200}
         breakpoint="lg"
@@ -118,10 +122,7 @@ const LayoutMain = () => {
           items={items}
         />
       </Sider>
-
-      {/* Content area shifted by sidebar width */}
       <Layout style={{ marginLeft: 200 }}>
-        {/* Fixed Header */}
         <div
           style={{
             position: 'fixed',
@@ -135,7 +136,6 @@ const LayoutMain = () => {
           <CustomHeader title={currentTitle} />
         </div>
 
-        {/* Content below fixed header */}
         <Content style={{ marginTop: 64, padding: '24px 16px 0' }}>
           <div
             className="fade-in"
@@ -155,7 +155,6 @@ const LayoutMain = () => {
         </Footer>
       </Layout>
 
-      {/* ✅ Custom Logout Modal */}
       <Modal
         title="Confirm Logout"
         open={logoutVisible}
