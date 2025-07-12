@@ -243,10 +243,17 @@ const AdminEvents = () => {
 
                   <div style={{ marginTop: 20 }}>
                     <h4>📱 Registration Form QR Code</h4>
-                    <QRCode
-                      value={`${window.location.origin}/form/${selectedEvent?.id}`}
-                      size={128}
-                    />
+                    {selectedEvent?.id ? (
+                      <div style={{ padding: 12, background: '#fff', display: 'inline-block' }}>
+                        <QRCode
+                          value={`${window.location.origin}/form/${selectedEvent.id}`}
+                          size={128}
+                        />
+                      </div>
+                    ) : (
+                      <p>Loading QR Code...</p>
+                    )}
+
                     <p style={{ marginTop: 8 }}>
                       <a
                         href={`/form/${selectedEvent?.id}`}
