@@ -81,29 +81,6 @@ const AdminEvents = () => {
     return { yearCounts, sectionCounts };
   };
 
-  const handleDeleteRegistrant = (reg) => {
-    if (!selectedEvent) return;
-
-    Modal.confirm({
-      title: `Delete registration for ${reg.fullName}?`,
-      content: 'This action cannot be undone.',
-      okText: 'Delete',
-      okType: 'danger',
-      cancelText: 'Cancel',
-      onOk: async () => {
-        try {
-          const regRef = doc(db, 'events', selectedEvent.id, 'registrations', reg.firestoreId);
-          await deleteDoc(regRef);
-          message.success('Registrant deleted');
-          setRegistrations(prev => prev.filter(r => r.firestoreId !== reg.firestoreId));
-        } catch (err) {
-          console.error(err);
-          message.error('Failed to delete registrant.');
-        }
-      },
-    });
-  };
-
   const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#00C49F', '#FFBB28'];
 
   return (
