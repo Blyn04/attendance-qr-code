@@ -264,7 +264,6 @@ const AdminEvents = () => {
                     <p><strong>Form Closes:</strong> {dayjs(selectedEvent.formDeadline).format('YYYY-MM-DD HH:mm')}</p>
                   )}
 
-                  {/* QR Code */}
                   <div style={{ marginTop: 20 }}>
                     <h4>📱 Registration Form QR Code</h4>
                     <QRCode
