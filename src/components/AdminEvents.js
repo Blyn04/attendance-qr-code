@@ -29,8 +29,8 @@ const AdminEvents = () => {
   const [registrations, setRegistrations] = useState([]);
   const [selectedRegistrant, setSelectedRegistrant] = useState(null);
   const [showRegistrantModal, setShowRegistrantModal] = useState(false);
-  const [selectedYearFilter, setSelectedYearFilter] = useState('');
-  const [selectedSectionFilter, setSelectedSectionFilter] = useState('');
+  const [selectedYearFilter, setSelectedYearFilter] = useState(null);
+  const [selectedSectionFilter, setSelectedSectionFilter] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingRegistrant, setDeletingRegistrant] = useState(null);
   const [form] = Form.useForm();
