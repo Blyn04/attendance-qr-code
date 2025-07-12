@@ -10,6 +10,7 @@ import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import dayjs from 'dayjs';
+import QRCode from "react-qr-code";
 import '../styles/AdminEvents.css';
 
 const { Option } = Select
@@ -237,6 +238,20 @@ const AdminEvents = () => {
         <Tabs
           defaultActiveKey="1"
           items={[
+            // {
+            //   key: '1',
+            //   label: 'Details',
+            //   children: (
+            //     <div>
+            //       <p><strong>Room:</strong> {selectedEvent?.room || 'TBD'}</p>
+            //       <p><strong>Date:</strong> {selectedEvent?.date}</p>
+            //       <p><strong>Time:</strong> {selectedEvent?.startTime} - {selectedEvent?.endTime}</p>
+            //       {selectedEvent?.formDeadline && (
+            //         <p><strong>Form Closes:</strong> {dayjs(selectedEvent.formDeadline).format('YYYY-MM-DD HH:mm')}</p>
+            //       )}
+            //     </div>
+            //   ),
+            // },
             {
               key: '1',
               label: 'Details',
@@ -248,6 +263,24 @@ const AdminEvents = () => {
                   {selectedEvent?.formDeadline && (
                     <p><strong>Form Closes:</strong> {dayjs(selectedEvent.formDeadline).format('YYYY-MM-DD HH:mm')}</p>
                   )}
+
+                  {/* QR Code */}
+                  <div style={{ marginTop: 20 }}>
+                    <h4>📱 Registration Form QR Code</h4>
+                    <QRCode
+                      value={`${window.location.origin}/form/${selectedEvent?.id}`}
+                      size={128}
+                    />
+                    <p style={{ marginTop: 8 }}>
+                      <a
+                        href={`/form/${selectedEvent?.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Open Registration Link
+                      </a>
+                    </p>
+                  </div>
                 </div>
               ),
             },
@@ -543,9 +576,11 @@ const AdminEvents = () => {
 
             message.success('Registrant deleted');
             setRegistrations(prev => prev.filter(r => r.firestoreId !== deletingRegistrant.firestoreId));
+
           } catch (err) {
             console.error(err);
             message.error('Failed to delete registrant.');
+
           } finally {
             setShowDeleteConfirm(false);
             setDeletingRegistrant(null);
