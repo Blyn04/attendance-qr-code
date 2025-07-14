@@ -483,46 +483,47 @@ const AdminEvents = () => {
               const defaultFields = [];
               const customFields = [];
 
-              Object.entries(selectedRegistrant).forEach(([key, value]) => {
-                let displayValue;
+Object.entries(selectedRegistrant).forEach(([key, value]) => {
+  if (key === 'firestoreId') return; // Skip this key
 
-                if (typeof value === 'boolean') {
-                  displayValue = value ? '✔️ Yes' : '❌ No';
+  let displayValue;
 
-                } else if (Array.isArray(value)) {
-                  displayValue = value.join(', ');
+  if (typeof value === 'boolean') {
+    displayValue = value ? '✔️ Yes' : '❌ No';
 
-                } else if (typeof value === 'object' && value !== null) {
-                  // Handle Firestore Timestamps
-                  if ('seconds' in value && 'nanoseconds' in value) {
-                    displayValue = new Date(value.seconds * 1000).toLocaleString();
+  } else if (Array.isArray(value)) {
+    displayValue = value.join(', ');
 
-                  } else {
-                    // Safely stringify other objects
-                    displayValue = JSON.stringify(value, null, 2);
-                  }
+  } else if (typeof value === 'object' && value !== null) {
+    // Handle Firestore Timestamps
+    if ('seconds' in value && 'nanoseconds' in value) {
+      displayValue = new Date(value.seconds * 1000).toLocaleString();
 
-                } else {
-                  displayValue = value;
-                }
+    } else {
+      // Safely stringify other objects
+      displayValue = JSON.stringify(value, null, 2);
+    }
 
-                const formattedKey = key
-                  .replace(/([A-Z])/g, ' $1')
-                  .replace(/^./, str => str.toUpperCase());
+  } else {
+    displayValue = value;
+  }
 
-                const item = (
-                  <div key={key} style={{ marginBottom: 10 }}>
-                    <strong>{formattedKey}:</strong> {displayValue}
-                  </div>
-                );
+  const formattedKey = key
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, str => str.toUpperCase());
 
-                if (defaultKeys.includes(key)) {
-                  defaultFields.push(item);
+  const item = (
+    <div key={key} style={{ marginBottom: 10 }}>
+      <strong>{formattedKey}:</strong> {displayValue}
+    </div>
+  );
 
-                } else {
-                  customFields.push(item);
-                }
-              });
+  if (defaultKeys.includes(key)) {
+    defaultFields.push(item);
+  } else {
+    customFields.push(item);
+  }
+});
 
               return (
                 <>
