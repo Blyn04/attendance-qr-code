@@ -16,6 +16,7 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+import dayjs from 'dayjs';
 
 import '../styles/Dashboard.css';
 
@@ -27,6 +28,7 @@ const Dashboard = () => {
   const [eventCount, setEventCount] = useState(0);
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
   const [yearSectionData, setYearSectionData] = useState({});
+  const [upcomingEvent, setUpcomingEvent] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -66,6 +68,13 @@ const Dashboard = () => {
       });
 
       setYearSectionData(yearBreakdown);
+
+      // ✅ Find the upcoming event (nearest future date)
+      const upcoming = events
+        .filter(e => dayjs(e.date).isAfter(dayjs()))
+        .sort((a, b) => dayjs(a.date).diff(dayjs(b.date)))[0];
+
+      setUpcomingEvent(upcoming || null);
     };
 
     fetchData();
@@ -75,10 +84,18 @@ const Dashboard = () => {
     <div>
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={6}>
-          <Card bordered style={{ background: '#D6F5E3' }}>
+          <Card bordered style={{ background: '#D6F5E3', height: '100%' }}>
             <ShoppingOutlined style={{ fontSize: 28 }} />
             <h2>{eventCount}</h2>
             <p>Total Events</p>
+          </Card>
+        </Col>
+
+        <Col span={6}>
+          <Card bordered style={{ background: '#FFF7E6', height: '100%' }}>
+            <BarChartOutlined style={{ fontSize: 28 }} />
+            <h2>{upcomingEvent?.title || 'N/A'}</h2>
+            <p>Upcoming Event</p>
           </Card>
         </Col>
       </Row>

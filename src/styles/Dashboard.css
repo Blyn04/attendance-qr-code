@@ -33,3 +33,11 @@ canvas {
   max-width: 100% !important;
   height: auto !important;
 }
+
+.ant-row > .ant-col > .ant-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
