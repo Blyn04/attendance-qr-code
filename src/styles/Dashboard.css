@@ -34,10 +34,32 @@ canvas {
   height: auto !important;
 }
 
+/* Ensures each card fills its container and centers content */
 .ant-row > .ant-col > .ant-card {
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  text-align: center;
+}
+
+/* Full-width responsive dashboard card layout */
+.dashboard-cards .ant-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.dashboard-cards .ant-col {
+  flex: 1 0 0; /* Equal width columns */
+  min-width: 220px; /* Ensures responsiveness */
+}
+
+.dashboard-cards .ant-card {
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
 }
