@@ -350,7 +350,22 @@ const AdminEvents = () => {
             {
               key: '3',
               label: 'Attendance',
-              children: <div>📌 Attendance tracker goes here</div>,
+              children: (
+                <div className="attendance-tab">
+                  <div className="attendance-buttons">
+                    <Button type="primary" onClick={() => message.info("Saving PDF...")}>
+                      Save PDF
+                    </Button>
+                    <Button onClick={() => message.info("Exporting to Excel...")}>
+                      Export to Excel
+                    </Button>
+                  </div>
+
+                  <div className="attendance-placeholder">
+                    📌 Attendance tracker goes here
+                  </div>
+                </div>
+              ),
             },
             {
               key: '4',
@@ -483,47 +498,47 @@ const AdminEvents = () => {
               const defaultFields = [];
               const customFields = [];
 
-Object.entries(selectedRegistrant).forEach(([key, value]) => {
-  if (key === 'firestoreId') return; // Skip this key
+              Object.entries(selectedRegistrant).forEach(([key, value]) => {
+                if (key === 'firestoreId') return; // Skip this key
 
-  let displayValue;
+                let displayValue;
 
-  if (typeof value === 'boolean') {
-    displayValue = value ? '✔️ Yes' : '❌ No';
+                if (typeof value === 'boolean') {
+                  displayValue = value ? '✔️ Yes' : '❌ No';
 
-  } else if (Array.isArray(value)) {
-    displayValue = value.join(', ');
+                } else if (Array.isArray(value)) {
+                  displayValue = value.join(', ');
 
-  } else if (typeof value === 'object' && value !== null) {
-    // Handle Firestore Timestamps
-    if ('seconds' in value && 'nanoseconds' in value) {
-      displayValue = new Date(value.seconds * 1000).toLocaleString();
+                } else if (typeof value === 'object' && value !== null) {
+                  // Handle Firestore Timestamps
+                  if ('seconds' in value && 'nanoseconds' in value) {
+                    displayValue = new Date(value.seconds * 1000).toLocaleString();
 
-    } else {
-      // Safely stringify other objects
-      displayValue = JSON.stringify(value, null, 2);
-    }
+                  } else {
+                    // Safely stringify other objects
+                    displayValue = JSON.stringify(value, null, 2);
+                  }
 
-  } else {
-    displayValue = value;
-  }
+                } else {
+                  displayValue = value;
+                }
 
-  const formattedKey = key
-    .replace(/([A-Z])/g, ' $1')
-    .replace(/^./, str => str.toUpperCase());
+                const formattedKey = key
+                  .replace(/([A-Z])/g, ' $1')
+                  .replace(/^./, str => str.toUpperCase());
 
-  const item = (
-    <div key={key} style={{ marginBottom: 10 }}>
-      <strong>{formattedKey}:</strong> {displayValue}
-    </div>
-  );
+                const item = (
+                  <div key={key} style={{ marginBottom: 10 }}>
+                    <strong>{formattedKey}:</strong> {displayValue}
+                  </div>
+                );
 
-  if (defaultKeys.includes(key)) {
-    defaultFields.push(item);
-  } else {
-    customFields.push(item);
-  }
-});
+                if (defaultKeys.includes(key)) {
+                  defaultFields.push(item);
+                } else {
+                  customFields.push(item);
+                }
+              });
 
               return (
                 <>
