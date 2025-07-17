@@ -20,6 +20,13 @@
   line-height: 1.2;
 }
 
+.danger-menu-label {
+  color: #ff4d4f !important; 
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

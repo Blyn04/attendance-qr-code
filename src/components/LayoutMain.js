@@ -36,15 +36,19 @@ const items = [
   },
   {
     key: '3',
-    icon: React.createElement(LogoutOutlined),
-    label: 'Sign Out',
+    icon: (
+      <span className="danger-menu-label">
+        <LogoutOutlined style={{ marginRight: 8 }} />
+        Sign Out
+      </span>
+    ),
   },
 ];
 
 const LayoutMain = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [logoutVisible, setLogoutVisible] = useState(false); // ✅ custom modal state
+  const [logoutVisible, setLogoutVisible] = useState(false);
 
   const {
     token: { colorBgContainer, borderRadiusLG },
