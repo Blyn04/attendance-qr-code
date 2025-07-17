@@ -741,7 +741,46 @@ const AdminEventForms = () => {
                         <Option value="email">Email</Option>
                         <Option value="number">Number</Option>
                         <Option value="checkbox">Checkbox</Option>
+                        <Option value="multipleChoice">Multiple Choice</Option> {/* 👈 ADD THIS */}
                       </Select>
+                    </Form.Item>
+
+                    <Form.Item shouldUpdate noStyle>
+                      {({ getFieldValue }) => {
+                        const type = getFieldValue(['customQuestions', name, 'type']);
+                        if (type === 'multipleChoice') {
+                          return (
+                            <Form.List name={[name, 'options']}>
+                              {(fields, { add, remove }) => (
+                                <>
+                                  <label>Choices</label>
+                                  {fields.map(({ key, name: optionName, ...restOptionField }) => (
+                                    <div key={key} style={{ display: 'flex', marginBottom: 8 }}>
+                                      <Form.Item
+                                        {...restOptionField}
+                                        name={optionName}
+                                        rules={[{ required: true, message: 'Choice is required' }]}
+                                        style={{ flex: 1, marginRight: 8 }}
+                                      >
+                                        <Input placeholder="e.g. A. 2" />
+                                      </Form.Item>
+                                      <Button type="link" danger onClick={() => remove(optionName)}>
+                                        Remove
+                                      </Button>
+                                    </div>
+                                  ))}
+                                  <Form.Item>
+                                    <Button type="dashed" onClick={() => add()} block icon="+">
+                                      Add Choice
+                                    </Button>
+                                  </Form.Item>
+                                </>
+                              )}
+                            </Form.List>
+                          );
+                        }
+                        return null;
+                      }}
                     </Form.Item>
 
                     <Form.Item
