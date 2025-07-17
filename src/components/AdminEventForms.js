@@ -657,6 +657,7 @@ const AdminEventForms = () => {
         onOk={handleUpdate}
         okText="Save Changes"
         className="edit-event-modal"
+        width={900}
       >
         <Form form={form} layout="vertical" className="event-form">
           <Form.Item label="Event Title" name="title" rules={[{ required: true }]} className="form-item">
@@ -671,13 +672,19 @@ const AdminEventForms = () => {
             <DatePicker className="custom-datepicker" style={{ width: '100%' }} />
           </Form.Item>
 
-          <Form.Item label="Start Time" name="startTime" rules={[{ required: true }]} className="form-item">
-            <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} className="form-timepicker" />
-          </Form.Item>
-
-          <Form.Item label="End Time" name="endTime" rules={[{ required: true }]} className="form-item">
-            <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} className="form-timepicker" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="Start Time" name="startTime" rules={[{ required: true }]} className="form-item">
+                <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} className="form-timepicker" />
+              </Form.Item>
+            </Col>
+            
+            <Col span={12}>
+              <Form.Item label="End Time" name="endTime" rules={[{ required: true }]} className="form-item">
+                <TimePicker format="HH:mm" style={{ width: '100%' }} minuteStep={5} className="form-timepicker" />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item
             label="Form Closes At"
@@ -741,7 +748,7 @@ const AdminEventForms = () => {
                         <Option value="email">Email</Option>
                         <Option value="number">Number</Option>
                         <Option value="checkbox">Checkbox</Option>
-                        <Option value="multipleChoice">Multiple Choice</Option> {/* 👈 ADD THIS */}
+                        <Option value="multipleChoice">Multiple Choice</Option> 
                       </Select>
                     </Form.Item>
 
