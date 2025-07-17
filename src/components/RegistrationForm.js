@@ -293,7 +293,7 @@ const RegistrationForm = () => {
             checked={formData.photoConsent}
             onChange={handleChange}
           />
-          Photo consent <span className="required-asterisk">*</span>
+          Photo consent
         </label>
 
         <label>
@@ -304,7 +304,7 @@ const RegistrationForm = () => {
             checked={formData.videoConsent}
             onChange={handleChange}
           />
-          Video consent <span className="required-asterisk">*</span>
+          Video consent 
         </label>
       </div>
 
