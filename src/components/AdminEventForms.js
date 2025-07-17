@@ -660,17 +660,62 @@ const AdminEventForms = () => {
         width={900}
       >
         <Form form={form} layout="vertical" className="event-form">
-          <Form.Item label="Event Title" name="title" rules={[{ required: true }]} className="form-item">
-            <Input className="form-input" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Event Title"
+                name="title"
+                rules={[{ required: true }]}
+                className="form-item"
+              >
+                <Input className="form-input" />
+              </Form.Item>
+            </Col>
 
-          <Form.Item label="Room / Venue" name="room" rules={[{ required: true }]} className="form-item">
-            <Input className="form-input" />
-          </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Room / Venue"
+                name="room"
+                rules={[{ required: true }]}
+                className="form-item"
+              >
+                <Input className="form-input" />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item label="Date" name="date" rules={[{ required: true }]} className="form-item">
+          {/* <Form.Item label="Date" name="date" rules={[{ required: true }]} className="form-item">
             <DatePicker className="custom-datepicker" style={{ width: '100%' }} />
-          </Form.Item>
+          </Form.Item> */}
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Date"
+                name="date"
+                rules={[{ required: true }]}
+                className="form-item"
+              >
+                <DatePicker className="custom-datepicker" style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item
+                label="Form Closes At"
+                name="formDeadline"
+                rules={[{ required: true, message: 'Please set the form closing time' }]}
+                className="form-item"
+              >
+                <DatePicker
+                  showTime={{ minuteStep: 10 }}
+                  format="YYYY-MM-DD HH:mm"
+                  style={{ width: '100%' }}
+                  className="form-deadline-picker"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Row gutter={16}>
             <Col span={12}>
@@ -686,7 +731,7 @@ const AdminEventForms = () => {
             </Col>
           </Row>
 
-          <Form.Item
+          {/* <Form.Item
             label="Form Closes At"
             name="formDeadline"
             rules={[{ required: true, message: 'Please set the form closing time' }]}
@@ -698,12 +743,12 @@ const AdminEventForms = () => {
               style={{ width: '100%' }}
               className="form-deadline-picker"
             />
-          </Form.Item>
+          </Form.Item> */}
 
           <Form.List name="customQuestions">
             {(fields, { add, remove }) => (
               <div className="custom-question-list">
-                <label className="custom-question-label">📝 Custom Questions (for registration form)</label>
+                <label className="custom-question-label">Custom Questions (for registration form)</label>
                 {fields.map(({ key, name, ...restField }) => (
                   <Space key={key} direction="vertical" className="custom-question-item" style={{ width: '100%' }}>
                     <Form.Item shouldUpdate noStyle>
@@ -790,22 +835,35 @@ const AdminEventForms = () => {
                       }}
                     </Form.Item>
 
-                    <Form.Item
-                      {...restField}
-                      label="Required?"
-                      name={[name, 'required']}
-                      valuePropName="checked"
-                      className="form-item"
-                    >
-                      <Switch
-                        className="custom-required-switch"
-                        checkedChildren="Yes"
-                        unCheckedChildren="No"
-                      />
-                    </Form.Item>
+                    <Row gutter={8} align="middle">
+                      <Col flex="none">
+                        <label className="toggle-label">Required?</label>
+                      </Col>
+                      <Col flex="auto">
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'required']}
+                          valuePropName="checked"
+                          className="form-item"
+                          noStyle
+                        >
+                          <Switch
+                            className="custom-required-switch"
+                            checkedChildren="Yes"
+                            unCheckedChildren="No"
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
 
-                    <Button danger type="link" onClick={() => remove(name)} className="remove-question-btn">
-                      Remove
+                    <Button
+                      danger
+                      type="link"
+                      onClick={() => remove(name)}
+                      className="remove-question-btn"
+                      icon={<DeleteOutlined />}
+                    >
+                      Remove Question
                     </Button>
                     <hr />
                   </Space>
