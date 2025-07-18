@@ -106,7 +106,7 @@ const RegistrationForm = () => {
           email: formData.email,
           fullName: formData.fullName,
           eventTitle: event.title,
-          qrData: fullPath, // <- use full Firestore path here
+          qrData: fullPath, 
           sendCopy: formData.sendCopy,
           formSummary: formData
         })
