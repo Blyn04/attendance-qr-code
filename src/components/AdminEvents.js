@@ -33,6 +33,7 @@ const AdminEvents = () => {
   const [selectedSectionFilter, setSelectedSectionFilter] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingRegistrant, setDeletingRegistrant] = useState(null);
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [form] = Form.useForm();
 
   const fetchEvents = async () => {
@@ -65,9 +66,13 @@ const AdminEvents = () => {
     setSelectedEvent(event);
 
     const regSnapshot = await getDocs(collection(db, 'events', event.id, 'registrations'));
-    // const regList = regSnapshot.docs.map(doc => doc.data());
     const regList = regSnapshot.docs.map(doc => ({ firestoreId: doc.id, ...doc.data() }));
     setRegistrations(regList);
+
+    // Fetch attendance
+    const attSnapshot = await getDocs(collection(db, 'events', event.id, 'attendance'));
+    const attList = attSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setAttendanceRecords(attList);
   };
 
   const getAnalytics = () => {
@@ -370,8 +375,22 @@ const AdminEvents = () => {
                     </Button>
                   </div>
 
-                  <div className="attendance-placeholder">
-                    📌 Attendance tracker goes here
+                  <div className="attendance-list">
+                    {attendanceRecords.length === 0 ? (
+                      <p>No attendance records yet.</p>
+                    ) : (
+                      <ul style={{ paddingLeft: 0 }}>
+                        {attendanceRecords.map((record, index) => (
+                          <li key={index} style={{ marginBottom: 12, listStyle: 'none' }}>
+                            <div>
+                              <strong>{record.fullName}</strong> <br />
+                              <small>{record.email}</small> <br />
+                              <em>Scanned at: {record.scannedAt?.seconds ? new Date(record.scannedAt.seconds * 1000).toLocaleString() : 'N/A'}</em>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 </div>
               ),
