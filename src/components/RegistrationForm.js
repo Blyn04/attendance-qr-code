@@ -12,7 +12,8 @@ const RegistrationForm = () => {
   const [customQuestions, setCustomQuestions] = useState([]);
   const [isClosed, setIsClosed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [step, setStep] = useState('privacy'); // new step control
+  const [step, setStep] = useState('privacy'); 
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -85,28 +86,39 @@ const RegistrationForm = () => {
       return;
     }
 
-    const docRef = await addDoc(
-      collection(db, 'events', eventId, 'registrations'),
-      {
-        ...formData,
-        submittedAt: new Date()
-      }
-    );
+    setLoading(true); 
 
-    await fetch('http://localhost:3001/send-qr', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: formData.email,
-        fullName: formData.fullName,
-        eventTitle: event.title,
-        qrData: docRef.id,
-        sendCopy: formData.sendCopy,
-        formSummary: formData
-      })
-    });
+    try {
+      const docRef = await addDoc(
+        collection(db, 'events', eventId, 'registrations'),
+        {
+          ...formData,
+          submittedAt: new Date()
+        }
+      );
 
-    setSubmitted(true);
+      await fetch('http://localhost:3001/send-qr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          fullName: formData.fullName,
+          eventTitle: event.title,
+          qrData: docRef.id,
+          sendCopy: formData.sendCopy,
+          formSummary: formData
+        })
+      });
+
+      setSubmitted(true);
+      
+    } catch (error) {
+      alert("An error occurred during submission.");
+      console.error(error);
+
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderPrivacyPage = () => (
