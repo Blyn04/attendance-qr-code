@@ -86,7 +86,7 @@ const RegistrationForm = () => {
       return;
     }
 
-    setLoading(true); 
+    setLoading(true);
 
     try {
       const docRef = await addDoc(
@@ -97,6 +97,8 @@ const RegistrationForm = () => {
         }
       );
 
+      const fullPath = `/events/${eventId}/registrations/${docRef.id}`;
+
       await fetch('http://localhost:3001/send-qr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -104,14 +106,14 @@ const RegistrationForm = () => {
           email: formData.email,
           fullName: formData.fullName,
           eventTitle: event.title,
-          qrData: docRef.id,
+          qrData: fullPath, // <- use full Firestore path here
           sendCopy: formData.sendCopy,
           formSummary: formData
         })
       });
 
       setSubmitted(true);
-      
+
     } catch (error) {
       alert("An error occurred during submission.");
       console.error(error);
