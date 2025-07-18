@@ -191,6 +191,28 @@
   width: 100%;
 }
 
+.event-details {
+  font-size: 14px;
+  color: #444;
+  text-align: left; /* 👈 force left alignment */
+}
+
+.ant-card-head-title {
+  text-align: left !important; /* Ant Design default is center sometimes */
+}
+
+.edit-event-modal .ant-modal-body {
+  text-align: left; /* aligns labels and contents inside the modal */
+}
+
+.event-form .ant-form-item-label {
+  text-align: left;
+}
+
+.text-left {
+  text-align: left !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .button-group {

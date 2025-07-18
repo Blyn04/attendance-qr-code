@@ -248,3 +248,50 @@
   font-size: 16px;
   color: #555;
 }
+
+/* ========== ADDITIONS: Left alignment & spacing fix ========== */
+
+.styled-event-card {
+  text-align: left;
+  padding: 20px; /* Adds better spacing without affecting layout */
+}
+
+.event-card-header {
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.event-title-meta h3,
+.event-meta,
+.event-description,
+.event-description p {
+  text-align: left;
+}
+
+.event-description p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.event-description p strong {
+  font-weight: 500;
+  color: #2d2d2d;
+}
+
+.add-event-btn {
+  min-width: 140px;
+  font-weight: 500;
+}
+
+@media (max-width: 576px) {
+  .event-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .add-event-btn {
+    width: 100%;
+  }
+}
