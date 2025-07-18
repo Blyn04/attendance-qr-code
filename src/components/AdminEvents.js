@@ -34,6 +34,8 @@ const AdminEvents = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingRegistrant, setDeletingRegistrant] = useState(null);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [selectedAttendee, setSelectedAttendee] = useState(null);
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [form] = Form.useForm();
 
   const fetchEvents = async () => {
@@ -363,7 +365,7 @@ const AdminEvents = () => {
             },
             {
               key: '3',
-              label: 'Attendance',
+              label: `Attendance (${attendanceRecords.length})`,
               children: (
                 <div className="attendance-tab">
                   <div className="attendance-buttons">
@@ -375,25 +377,46 @@ const AdminEvents = () => {
                     </Button>
                   </div>
 
-                  <div className="attendance-list">
+                  <div className="registration-filters" style={{ marginTop: 16 }}>
+                    <Input.Search
+                      placeholder="Search by name or email"
+                      allowClear
+                      onChange={(e) => setSearchText1(e.target.value)}
+                      className="ant-input-search"
+                      style={{ maxWidth: 300 }}
+                    />
+                  </div>
+
+                  <div className="attendance-list" style={{ marginTop: 16 }}>
                     {attendanceRecords.length === 0 ? (
                       <p>No attendance records yet.</p>
                     ) : (
                       <ul style={{ paddingLeft: 0 }}>
-                        {attendanceRecords.map((record, index) => (
-                          <li key={index} style={{ marginBottom: 12, listStyle: 'none' }}>
-                            <div>
-                              <strong>{record.fullName}</strong> <br />
-                              <small>{record.email}</small> <br />
-                              <em>Scanned at: {record.scannedAt?.seconds ? new Date(record.scannedAt.seconds * 1000).toLocaleString() : 'N/A'}</em>
-                            </div>
-                          </li>
-                        ))}
+                        {attendanceRecords
+                          .filter(record =>
+                            (record.fullName?.toLowerCase().includes(searchText1.toLowerCase()) ||
+                            record.email?.toLowerCase().includes(searchText1.toLowerCase()))
+                          )
+                          .map((record, index) => (
+                            <li key={index} style={{ marginBottom: 12, listStyle: 'none' }}>
+                              <div
+                                onClick={() => {
+                                  setSelectedAttendee(record);
+                                  setShowAttendanceModal(true);
+                                }}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <strong>{record.fullName}</strong> <br />
+                                <small>{record.email}</small> <br />
+                                <em>Scanned at: {record.timestamp?.seconds ? new Date(record.timestamp.seconds * 1000).toLocaleString() : 'N/A'}</em>
+                              </div>
+                            </li>
+                          ))}
                       </ul>
                     )}
                   </div>
                 </div>
-              ),
+              )
             },
             {
               key: '4',
@@ -590,6 +613,99 @@ const AdminEvents = () => {
                   {customFields.length > 0 && (
                     <>
                       <h4 style={{ marginTop: 20 }}>Custom Questions</h4>
+                      {customFields}
+                    </>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+        ) : (
+          <p>No data found.</p>
+        )}
+      </Modal>
+
+      <Modal
+        open={showAttendanceModal}
+        onCancel={() => {
+          setShowAttendanceModal(false);
+          setSelectedAttendee(null);
+        }}
+        footer={null}
+        title={selectedAttendee?.fullName || "Attendee Details"}
+        width={600}
+      >
+        {selectedAttendee ? (
+          <div>
+            {(() => {
+              const defaultKeys = [
+                'fullName',
+                'email',
+                'year',
+                'section',
+                'photoConsent',
+                'videoConsent',
+                'dataPrivacyAgreement',
+                'sendCopy',
+                // 'registrationId',
+                'submittedAt',
+                'timestamp',
+              ];
+
+              const defaultFields = [];
+              const customFields = [];
+
+              Object.entries(selectedAttendee).forEach(([key, value]) => {
+                if (key === 'customAnswers') return;
+
+                let displayValue;
+
+                if (typeof value === 'boolean') {
+                  displayValue = value ? '✔️ Yes' : '❌ No';
+
+                } else if (typeof value === 'object' && value?.seconds) {
+                  displayValue = new Date(value.seconds * 1000).toLocaleString();
+
+                } else {
+                  displayValue = value;
+                }
+
+                const formattedKey = key
+                  .replace(/([A-Z])/g, ' $1')
+                  .replace(/^./, str => str.toUpperCase());
+
+                if (defaultKeys.includes(key)) {
+                  defaultFields.push(
+                    <div key={key} style={{ marginBottom: 10 }}>
+                      <strong>{formattedKey}:</strong> {displayValue}
+                    </div>
+                  );
+                }
+              });
+
+              if (
+                selectedAttendee.customAnswers &&
+                typeof selectedAttendee.customAnswers === 'object'
+              ) {
+                Object.entries(selectedAttendee.customAnswers).forEach(([question, answer], index) => {
+                  const displayAnswer = typeof answer === 'boolean' ? (answer ? '✔️ Yes' : '❌ No') : answer;
+
+                  customFields.push(
+                    <div key={index} style={{ marginBottom: 10 }}>
+                      <strong>{question}:</strong> {displayAnswer}
+                    </div>
+                  );
+                });
+              }
+
+              return (
+                <>
+                  <h4>📝 Attendee Info</h4>
+                  {defaultFields}
+
+                  {customFields.length > 0 && (
+                    <>
+                      <h4 style={{ marginTop: 20 }}>Custom Answers</h4>
                       {customFields}
                     </>
                   )}
