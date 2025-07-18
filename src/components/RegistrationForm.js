@@ -106,6 +106,8 @@ const RegistrationForm = () => {
           email: formData.email,
           fullName: formData.fullName,
           eventTitle: event.title,
+          eventDate: event.date,  
+          eventRoom: event.room,    
           qrData: fullPath, 
           sendCopy: formData.sendCopy,
           formSummary: formData
