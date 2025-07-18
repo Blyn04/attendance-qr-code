@@ -13,6 +13,8 @@ import dayjs from 'dayjs';
 import QRCode from "react-qr-code";
 import '../styles/AdminEvents.css';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const { Option } = Select
 
@@ -81,6 +83,31 @@ const AdminEvents = () => {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
 
     XLSX.writeFile(workbook, 'Attendance.xlsx');
+  };
+
+  const exportAttendanceToPDF = () => {
+    const doc = new jsPDF();
+    doc.text('Attendance Report', 14, 10);
+
+    const tableData = attendanceRecords.map((record, index) => [
+      index + 1,
+      record.fullName,
+      record.email,
+      record.section,
+      record.year,
+      record.scannedAt?.seconds
+        ? new Date(record.scannedAt.seconds * 1000).toLocaleString()
+        : 'N/A',
+    ]);
+
+    autoTable(doc, {
+      head: [['#', 'Full Name', 'Email', 'Section', 'Year', 'Scanned At']],
+      body: tableData,
+      startY: 20,
+      styles: { fontSize: 9 },
+    });
+
+    doc.save('Attendance.pdf');
   };
 
   const handleCardClick = async (event) => {
@@ -388,10 +415,10 @@ const AdminEvents = () => {
               children: (
                 <div className="attendance-tab">
                   <div className="attendance-buttons">
-                    <Button type="primary" onClick={() => message.info("Saving PDF...")}>
+                    <Button type="primary" onClick={exportAttendanceToPDF}>
                       Save PDF
                     </Button>
-                    
+
                     <Button onClick={exportAttendanceToExcel}>
                       Export to Excel
                     </Button>
