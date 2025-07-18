@@ -492,7 +492,7 @@ const AdminEvents = () => {
                 'section',
                 'photoConsent',
                 'videoConsent',
-                'agreeToDataPrivacyPolicy',
+                'dataPrivacyAgreement',
                 'submittedAt',
                 'photo',
                 'video',
@@ -501,8 +501,9 @@ const AdminEvents = () => {
               const defaultFields = [];
               const customFields = [];
 
+              // Extract and render default fields
               Object.entries(selectedRegistrant).forEach(([key, value]) => {
-                if (key === 'firestoreId' || key === 'customQuestions') return;
+                if (key === 'firestoreId' || key === 'customAnswers') return;
 
                 let displayValue;
 
@@ -513,9 +514,11 @@ const AdminEvents = () => {
                 } else if (typeof value === 'object' && value !== null) {
                   if ('seconds' in value && 'nanoseconds' in value) {
                     displayValue = new Date(value.seconds * 1000).toLocaleString();
+
                   } else {
                     displayValue = JSON.stringify(value, null, 2);
                   }
+
                 } else {
                   displayValue = value;
                 }
@@ -524,25 +527,28 @@ const AdminEvents = () => {
                   .replace(/([A-Z])/g, ' $1')
                   .replace(/^./, str => str.toUpperCase());
 
-                const item = (
-                  <div key={key} style={{ marginBottom: 10 }}>
-                    <strong>{formattedKey}:</strong> {displayValue}
-                  </div>
-                );
-
                 if (defaultKeys.includes(key)) {
-                  defaultFields.push(item);
+                  defaultFields.push(
+                    <div key={key} style={{ marginBottom: 10 }}>
+                      <strong>{formattedKey}:</strong> {displayValue}
+                    </div>
+                  );
                 }
               });
 
-              // Process customQuestions separately
-              if (Array.isArray(selectedRegistrant.customQuestions)) {
-                selectedRegistrant.customQuestions.forEach((question, index) => {
-                  const answer = question.answer ?? '—';
+              if (
+                selectedRegistrant.customAnswers &&
+                typeof selectedRegistrant.customAnswers === 'object' &&
+                Object.keys(selectedRegistrant.customAnswers).length > 0
+              ) {
+                Object.entries(selectedRegistrant.customAnswers).forEach(([question, answer], index) => {
+                  const displayAnswer = typeof answer === 'boolean'
+                    ? (answer ? '✔️ Yes' : '❌ No')
+                    : answer;
 
                   customFields.push(
                     <div key={index} style={{ marginBottom: 10 }}>
-                      <strong>{question.label}:</strong> {typeof answer === 'boolean' ? (answer ? '✔️ Yes' : '❌ No') : answer}
+                      <strong>{question}:</strong> {displayAnswer}
                     </div>
                   );
                 });
@@ -555,7 +561,7 @@ const AdminEvents = () => {
 
                   {customFields.length > 0 && (
                     <>
-                      <h4 style={{ marginTop: 20 }}>🧩 Custom Questions</h4>
+                      <h4 style={{ marginTop: 20 }}>Custom Questions</h4>
                       {customFields}
                     </>
                   )}
