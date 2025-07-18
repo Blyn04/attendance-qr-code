@@ -68,46 +68,119 @@ const AdminEvents = () => {
   };
 
   const exportAttendanceToExcel = () => {
-    const data = attendanceRecords.map((record) => ({
-      'Full Name': record.fullName,
-      Email: record.email,
-      Section: record.section,
-      Year: record.year,
-      'Scanned At': record.scannedAt?.seconds
-        ? new Date(record.scannedAt.seconds * 1000).toLocaleString()
-        : 'N/A',
-    }));
+    if (attendanceRecords.length === 0) {
+      return message.warning("No attendance records to export.");
+    }
+
+    const allKeys = new Set();
+
+    attendanceRecords.forEach(record => {
+      Object.keys(record).forEach(key => {
+        if (key !== 'customAnswers') {
+          allKeys.add(key);
+        }
+      });
+
+      if (record.customAnswers && typeof record.customAnswers === 'object') {
+        Object.keys(record.customAnswers).forEach(key => {
+          allKeys.add(key);
+        });
+      }
+    });
+
+    const columns = Array.from(allKeys);
+
+    const data = attendanceRecords.map(record => {
+      const row = {};
+
+      columns.forEach(key => {
+        if (record.hasOwnProperty(key)) {
+          if (typeof record[key] === 'object' && record[key]?.seconds) {
+            row[key] = new Date(record[key].seconds * 1000).toLocaleString();
+          } else if (typeof record[key] === 'boolean') {
+            row[key] = record[key] ? '✔️ Yes' : '❌ No';
+          } else {
+            row[key] = record[key];
+          }
+        } else if (record.customAnswers?.hasOwnProperty(key)) {
+          const value = record.customAnswers[key];
+          row[key] = typeof value === 'boolean' ? (value ? '✔️ Yes' : '❌ No') : value;
+        } else {
+          row[key] = '';
+        }
+      });
+
+      return row;
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
 
-    XLSX.writeFile(workbook, 'Attendance.xlsx');
+    XLSX.writeFile(workbook, 'Attendance_Full.xlsx');
   };
 
   const exportAttendanceToPDF = () => {
+    if (attendanceRecords.length === 0) {
+      return message.warning("No attendance records to export.");
+    }
+
     const doc = new jsPDF();
-    doc.text('Attendance Report', 14, 10);
+    doc.text('Full Attendance Report', 14, 10);
 
-    const tableData = attendanceRecords.map((record, index) => [
-      index + 1,
-      record.fullName,
-      record.email,
-      record.section,
-      record.year,
-      record.scannedAt?.seconds
-        ? new Date(record.scannedAt.seconds * 1000).toLocaleString()
-        : 'N/A',
-    ]);
+    const allKeys = new Set();
 
-    autoTable(doc, {
-      head: [['#', 'Full Name', 'Email', 'Section', 'Year', 'Scanned At']],
-      body: tableData,
-      startY: 20,
-      styles: { fontSize: 9 },
+    attendanceRecords.forEach(record => {
+      Object.keys(record).forEach(key => {
+        if (key !== 'customAnswers') {
+          allKeys.add(key);
+        }
+      });
+
+      if (record.customAnswers && typeof record.customAnswers === 'object') {
+        Object.keys(record.customAnswers).forEach(key => {
+          allKeys.add(key);
+        });
+      }
     });
 
-    doc.save('Attendance.pdf');
+    const columns = Array.from(allKeys);
+    const headRow = ['#', ...columns];
+
+    const bodyRows = attendanceRecords.map((record, index) => {
+      const row = [index + 1];
+
+      columns.forEach(key => {
+        if (record.hasOwnProperty(key)) {
+          const val = record[key];
+          if (typeof val === 'object' && val?.seconds) {
+            row.push(new Date(val.seconds * 1000).toLocaleString());
+          } else if (typeof val === 'boolean') {
+            row.push(val ? '✔️ Yes' : '❌ No');
+          } else {
+            row.push(val);
+          }
+        } else if (record.customAnswers?.hasOwnProperty(key)) {
+          const value = record.customAnswers[key];
+          row.push(typeof value === 'boolean' ? (value ? '✔️ Yes' : '❌ No') : value);
+        } else {
+          row.push('');
+        }
+      });
+
+      return row;
+    });
+
+    autoTable(doc, {
+      head: [headRow],
+      body: bodyRows,
+      startY: 20,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [100, 100, 255] },
+      margin: { top: 20 },
+    });
+
+    doc.save('Attendance_Full.pdf');
   };
 
   const handleCardClick = async (event) => {
