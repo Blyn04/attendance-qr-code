@@ -51,6 +51,10 @@ const AdminEvents = () => {
     return () => unsub();
   }, []);
 
+  const disablePastDates = (current) => {
+    return current && current < dayjs().startOf('day');
+  };
+
   const handleSubmit = async () => {
     if (!title || !room || !date || !startTime || !endTime) {
       return message.error('Please fill in all fields.');
@@ -171,7 +175,11 @@ const AdminEvents = () => {
             name="date"
             rules={[{ required: true, message: 'Please select a date' }]}
           >
-            <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" />
+            <DatePicker
+              style={{ width: '100%' }}
+              format="YYYY-MM-DD"
+              disabledDate={disablePastDates}
+            />
           </Form.Item>
 
           <Form.Item
@@ -200,6 +208,7 @@ const AdminEvents = () => {
               format="YYYY-MM-DD HH:mm"
               style={{ width: '100%' }}
               minuteStep={10}
+              disabledDate={disablePastDates}
             />
           </Form.Item>
         </Form>

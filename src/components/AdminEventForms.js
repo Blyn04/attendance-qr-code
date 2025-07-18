@@ -466,6 +466,10 @@ const AdminEventForms = () => {
     return () => unsub();
   }, []);
 
+  const disablePastDates = (current) => {
+    return current && current < dayjs().startOf('day');
+  };
+
   const copyLink = (id) => {
     const url = `${window.location.origin}/form/${id}`;
     navigator.clipboard.writeText(url);
@@ -696,7 +700,11 @@ const AdminEventForms = () => {
                 rules={[{ required: true }]}
                 className="form-item"
               >
-                <DatePicker className="custom-datepicker" style={{ width: '100%' }} />
+                <DatePicker
+                  className="custom-datepicker"
+                  style={{ width: '100%' }}
+                  disabledDate={disablePastDates}
+                />
               </Form.Item>
             </Col>
 
@@ -712,6 +720,7 @@ const AdminEventForms = () => {
                   format="YYYY-MM-DD HH:mm"
                   style={{ width: '100%' }}
                   className="form-deadline-picker"
+                  disabledDate={disablePastDates}
                 />
               </Form.Item>
             </Col>
