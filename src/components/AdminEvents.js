@@ -12,6 +12,7 @@ import {
 import dayjs from 'dayjs';
 import QRCode from "react-qr-code";
 import '../styles/AdminEvents.css';
+import * as XLSX from 'xlsx';
 
 const { Option } = Select
 
@@ -62,6 +63,24 @@ const AdminEvents = () => {
     if (!title || !room || !date || !startTime || !endTime) {
       return message.error('Please fill in all fields.');
     }
+  };
+
+  const exportAttendanceToExcel = () => {
+    const data = attendanceRecords.map((record) => ({
+      'Full Name': record.fullName,
+      Email: record.email,
+      Section: record.section,
+      Year: record.year,
+      'Scanned At': record.scannedAt?.seconds
+        ? new Date(record.scannedAt.seconds * 1000).toLocaleString()
+        : 'N/A',
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
+
+    XLSX.writeFile(workbook, 'Attendance.xlsx');
   };
 
   const handleCardClick = async (event) => {
@@ -372,7 +391,8 @@ const AdminEvents = () => {
                     <Button type="primary" onClick={() => message.info("Saving PDF...")}>
                       Save PDF
                     </Button>
-                    <Button onClick={() => message.info("Exporting to Excel...")}>
+                    
+                    <Button onClick={exportAttendanceToExcel}>
                       Export to Excel
                     </Button>
                   </div>
