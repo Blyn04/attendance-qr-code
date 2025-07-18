@@ -352,7 +352,17 @@ const RegistrationForm = () => {
         </label>
       </div>
 
-      <button type="submit" className="submit-btn">Submit</button>
+      <button
+        type="submit"
+        className="submit-btn"
+        disabled={loading}
+      >
+        {loading ? (
+          <>
+            Submitting <span className="spinner" />
+          </>
+        ) : 'Submit'}
+      </button>
     </form>
   );
 };
