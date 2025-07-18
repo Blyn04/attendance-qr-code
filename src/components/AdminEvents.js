@@ -493,32 +493,29 @@ const AdminEvents = () => {
                 'photoConsent',
                 'videoConsent',
                 'agreeToDataPrivacyPolicy',
+                'submittedAt',
+                'photo',
+                'video',
               ];
 
               const defaultFields = [];
               const customFields = [];
 
               Object.entries(selectedRegistrant).forEach(([key, value]) => {
-                if (key === 'firestoreId') return; // Skip this key
+                if (key === 'firestoreId' || key === 'customQuestions') return;
 
                 let displayValue;
 
                 if (typeof value === 'boolean') {
                   displayValue = value ? '✔️ Yes' : '❌ No';
-
                 } else if (Array.isArray(value)) {
                   displayValue = value.join(', ');
-
                 } else if (typeof value === 'object' && value !== null) {
-                  // Handle Firestore Timestamps
                   if ('seconds' in value && 'nanoseconds' in value) {
                     displayValue = new Date(value.seconds * 1000).toLocaleString();
-
                   } else {
-                    // Safely stringify other objects
                     displayValue = JSON.stringify(value, null, 2);
                   }
-
                 } else {
                   displayValue = value;
                 }
@@ -535,10 +532,21 @@ const AdminEvents = () => {
 
                 if (defaultKeys.includes(key)) {
                   defaultFields.push(item);
-                } else {
-                  customFields.push(item);
                 }
               });
+
+              // Process customQuestions separately
+              if (Array.isArray(selectedRegistrant.customQuestions)) {
+                selectedRegistrant.customQuestions.forEach((question, index) => {
+                  const answer = question.answer ?? '—';
+
+                  customFields.push(
+                    <div key={index} style={{ marginBottom: 10 }}>
+                      <strong>{question.label}:</strong> {typeof answer === 'boolean' ? (answer ? '✔️ Yes' : '❌ No') : answer}
+                    </div>
+                  );
+                });
+              }
 
               return (
                 <>
