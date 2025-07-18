@@ -250,15 +250,18 @@ const RegistrationForm = () => {
       </div>
 
       {customQuestions.map((q, idx) => {
-        const fieldName = `custom_${idx}`;
-        const value = formData.customAnswers[idx] || '';
+        const questionKey = q.label;
+        const fieldName = `custom_${questionKey}`;
+        const value = formData.customAnswers[questionKey] || '';
         const isRequired = q.required === true;
 
         return (
           <div key={idx} className="form-group custom-question">
-            <label htmlFor={fieldName}>
-              {q.label}{isRequired && <span className="required-asterisk">*</span>}
+            <label className="form-label" htmlFor={fieldName}>
+              {q.label}
+              {isRequired && <span className="required-asterisk">*</span>}
             </label>
+
             {q.type === 'checkbox' ? (
               <input
                 type="checkbox"
@@ -269,6 +272,22 @@ const RegistrationForm = () => {
                 onChange={handleChange}
                 required={isRequired}
               />
+            ) : q.type === 'multipleChoice' ? (
+              <div className="radio-group">
+                {(q.options || []).map((option, optIdx) => (
+                  <label key={optIdx} className="radio-option">
+                    <input
+                      type="radio"
+                      name={fieldName}
+                      value={option}
+                      checked={value === option}
+                      onChange={handleChange}
+                      required={isRequired}
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
             ) : (
               <input
                 type={q.type || 'text'}
