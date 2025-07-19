@@ -39,6 +39,7 @@ const AdminEvents = () => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [selectedAttendee, setSelectedAttendee] = useState(null);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [eventFilter, setEventFilter] = useState('all'); // 'all' | 'past' | 'upcoming'
   const [form] = Form.useForm();
 
   const fetchEvents = async () => {
@@ -294,6 +295,29 @@ const AdminEvents = () => {
           onChange={(e) => setSearchText(e.target.value)}
           style={{ maxWidth: 300 }}
         />
+
+        <div style={{ marginBottom: 16 }}>
+          <Button
+            type={eventFilter === 'all' ? 'primary' : 'default'}
+            onClick={() => setEventFilter('all')}
+            style={{ marginRight: 8 }}
+          >
+            All Events
+          </Button>
+          <Button
+            type={eventFilter === 'upcoming' ? 'primary' : 'default'}
+            onClick={() => setEventFilter('upcoming')}
+            style={{ marginRight: 8 }}
+          >
+            Upcoming Events
+          </Button>
+          <Button
+            type={eventFilter === 'past' ? 'primary' : 'default'}
+            onClick={() => setEventFilter('past')}
+          >
+            Past Events
+          </Button>
+        </div>
       </div>
 
       <Modal
@@ -667,9 +691,13 @@ const AdminEvents = () => {
       <h3>Upcoming Events</h3>
       <Row gutter={[16, 16]}>
         {events
-          .filter(event =>
-            event.title.toLowerCase().includes(searchText.toLowerCase())
-          )
+          .filter(event => {
+            const matchTitle = event.title.toLowerCase().includes(searchText.toLowerCase());
+            const isPast = dayjs(event.date).isBefore(dayjs(), 'day');
+            if (eventFilter === 'past') return matchTitle && isPast;
+            if (eventFilter === 'upcoming') return matchTitle && !isPast;
+            return matchTitle;
+          })
           .map(event => (
             <Col xs={24} sm={24} md={12} lg={12} key={event.id}>
               <Card
@@ -695,7 +723,7 @@ const AdminEvents = () => {
                     Date: {event.date}
                   </Tag>
                 </div>
-                
+
                 <div className="event-description">
                   <p><strong>Time:</strong> {event.startTime} – {event.endTime}</p>
                   {event.formDeadline && (
