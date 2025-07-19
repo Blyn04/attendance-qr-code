@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 import { auth } from "../config/FirebaseConfig";
 import "../styles/Login.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -24,8 +27,17 @@ const Login = () => {
     setLoading(true);
     setError("");
 
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    if (/\s/.test(trimmedEmail) || /\s/.test(trimmedPassword)) {
+      setError("Email and password must not contain spaces.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, trimmedEmail, trimmedPassword);
       navigate("/dashboard");
       
     } catch (err) {
@@ -59,13 +71,20 @@ const Login = () => {
     e.preventDefault();
     setResetMessage("");
 
-    if (!resetEmail) {
+    const trimmedResetEmail = resetEmail.trim();
+
+    if (!trimmedResetEmail) {
       setResetMessage("Please enter your email.");
       return;
     }
 
+    if (/\s/.test(trimmedResetEmail)) {
+      setResetMessage("Email must not contain spaces.");
+      return;
+    }
+
     try {
-      await sendPasswordResetEmail(auth, resetEmail);
+      await sendPasswordResetEmail(auth, trimmedResetEmail);
       setResetMessage("Password reset email sent!");
 
     } catch (error) {
@@ -94,7 +113,9 @@ const Login = () => {
           placeholder="Email"
           value={email}
           required
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) =>
+            setEmail(e.target.value.replace(/\s/g, ""))
+          }
           disabled={loading}
         />
 
@@ -104,7 +125,9 @@ const Login = () => {
             placeholder="Password"
             value={password}
             required
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) =>
+              setPassword(e.target.value.replace(/\s/g, ""))
+            }
             disabled={loading}
           />
           <span
@@ -117,7 +140,13 @@ const Login = () => {
         </div>
 
         <div className="forgot-password">
-          <a href="#" onClick={(e) => { e.preventDefault(); setModalOpen(true); }}>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              setModalOpen(true);
+            }}
+          >
             Forgot Password?
           </a>
         </div>
@@ -136,11 +165,15 @@ const Login = () => {
                 type="email"
                 placeholder="Enter your email"
                 value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
+                onChange={(e) =>
+                  setResetEmail(e.target.value.replace(/\s/g, ""))
+                }
                 required
               />
               <button type="submit">Send Reset Email</button>
-              {resetMessage && <p className="reset-message">{resetMessage}</p>}
+              {resetMessage && (
+                <p className="reset-message">{resetMessage}</p>
+              )}
               <button
                 type="button"
                 className="close-modal"
