@@ -682,12 +682,20 @@ const AdminEvents = () => {
                   <Avatar shape="square" size="large" style={{ backgroundColor: '#f5a623' }}>
                     {event.title.slice(0, 2).toUpperCase()}
                   </Avatar>
+
                   <div className="event-title-meta">
                     <h3>{event.title}</h3>
                     <p className="event-meta"><strong>Room:</strong> {event.room || 'TBD'}</p>
                   </div>
-                  <Tag className="date-badge" color="red">Date: {event.date}</Tag>
+                  
+                  <Tag
+                    className="date-badge"
+                    color={dayjs(event.date).isBefore(dayjs(), 'day') ? 'red' : 'green'}
+                  >
+                    Date: {event.date}
+                  </Tag>
                 </div>
+                
                 <div className="event-description">
                   <p><strong>Time:</strong> {event.startTime} – {event.endTime}</p>
                   {event.formDeadline && (
