@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../config/FirebaseConfig';
-import { collection, addDoc, getDocs, doc, setDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, setDoc, onSnapshot, deleteDoc, getDoc } from 'firebase/firestore';
 import {
   Card, Row, Col, Tag, Avatar, Modal, Button, Progress,
   Input, TimePicker, message, Form, Tabs, DatePicker,
@@ -120,67 +120,133 @@ const AdminEvents = () => {
     XLSX.writeFile(workbook, 'Attendance_Full.xlsx');
   };
 
-  const exportAttendanceToPDF = () => {
+  const exportAttendanceToPDF = async (eventId) => {
     if (attendanceRecords.length === 0) {
       return message.warning("No attendance records to export.");
     }
 
-    const doc = new jsPDF();
-    doc.text('Full Attendance Report', 14, 10);
+    const docPDF = new jsPDF({ orientation: 'portrait' });
 
-    const allKeys = new Set();
+    // Fetch event details from 'events/{eventId}'
+    let eventTitle = "Event";
+    let eventDate = "";
+    let eventRoom = "";
 
-    attendanceRecords.forEach(record => {
-      Object.keys(record).forEach(key => {
-        if (key !== 'customAnswers') {
-          allKeys.add(key);
+    if (eventId) {
+      try {
+        const eventRef = doc(db, 'events', eventId);
+        const eventSnap = await getDoc(eventRef);
+
+        if (eventSnap.exists()) {
+          const eventData = eventSnap.data();
+          eventTitle = eventData.title || eventTitle;
+          eventDate = eventData.date
+            ? new Date(eventData.date.seconds * 1000).toLocaleDateString()
+            : '';
+          eventRoom = eventData.room || '';
         }
-      });
+      } catch (error) {
+        console.error("Failed to fetch event details:", error);
+      }
+    }
 
+    // Draw event details
+    docPDF.text(`Attendance Report: ${eventTitle}`, 14, 10);
+    if (eventDate) docPDF.text(`Date: ${eventDate}`, 14, 16);
+    if (eventRoom) docPDF.text(`Room: ${eventRoom}`, 14, 22);
+
+    const isExcluded = (key) =>
+      [
+        'id',
+        'submittedAt',
+        'sendCopy',
+        'registrationId',
+        'dataAgreement',
+        'dataPrivacy',
+        'dataPrivacyAgreement',
+      ].includes(key) ||
+      key.toLowerCase().includes('privacy') ||
+      key.toLowerCase().includes('agreement');
+
+    const fixedOrder = ['email', 'fullName', 'year', 'section', 'photoConsent', 'videoConsent'];
+
+    const customQuestionKeys = new Set();
+    attendanceRecords.forEach((record) => {
       if (record.customAnswers && typeof record.customAnswers === 'object') {
-        Object.keys(record.customAnswers).forEach(key => {
-          allKeys.add(key);
+        Object.keys(record.customAnswers).forEach((key) => {
+          if (!isExcluded(key)) {
+            customQuestionKeys.add(key);
+          }
         });
       }
     });
 
-    const columns = Array.from(allKeys);
-    const headRow = ['#', ...columns];
+    const sortedCustomQuestions = Array.from(customQuestionKeys).sort();
+    const columns = [...fixedOrder, ...sortedCustomQuestions, 'timestamp'];
+
+    const headRow = [
+      '#',
+      ...columns.map((col) =>
+        col.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())
+      ),
+    ];
 
     const bodyRows = attendanceRecords.map((record, index) => {
       const row = [index + 1];
 
-      columns.forEach(key => {
-        if (record.hasOwnProperty(key)) {
+      columns.forEach((key) => {
+        let value = '';
+
+        if (key === 'timestamp') {
+          const dateField =
+            record.createdAt ||
+            record.timestamp ||
+            record.time ||
+            record.date ||
+            record.scannedAt;
+          value = dateField?.seconds
+            ? new Date(dateField.seconds * 1000).toLocaleString()
+            : '';
+        } else if (record.hasOwnProperty(key)) {
           const val = record[key];
-          if (typeof val === 'object' && val?.seconds) {
-            row.push(new Date(val.seconds * 1000).toLocaleString());
-          } else if (typeof val === 'boolean') {
-            row.push(val ? '✔️ Yes' : '❌ No');
-          } else {
-            row.push(val);
-          }
+          value =
+            val?.seconds
+              ? new Date(val.seconds * 1000).toLocaleString()
+              : typeof val === 'boolean'
+              ? val ? 'Yes' : 'No'
+              : String(val);
         } else if (record.customAnswers?.hasOwnProperty(key)) {
-          const value = record.customAnswers[key];
-          row.push(typeof value === 'boolean' ? (value ? '✔️ Yes' : '❌ No') : value);
-        } else {
-          row.push('');
+          const customVal = record.customAnswers[key];
+          value =
+            typeof customVal === 'boolean'
+              ? customVal ? 'Yes' : 'No'
+              : String(customVal);
         }
+
+        row.push(value);
       });
 
       return row;
     });
 
-    autoTable(doc, {
+    autoTable(docPDF, {
       head: [headRow],
       body: bodyRows,
-      startY: 20,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [100, 100, 255] },
+      startY: eventRoom || eventDate ? 30 : 20,
+      styles: {
+        fontSize: 7,
+        cellWidth: 'wrap',
+        overflow: 'linebreak',
+      },
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: 255,
+      },
       margin: { top: 20 },
+      theme: 'grid',
     });
 
-    doc.save('Attendance_Full.pdf');
+    docPDF.save('Attendance_Full.pdf');
   };
 
   const handleCardClick = async (event) => {
