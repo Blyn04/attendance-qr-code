@@ -63,3 +63,8 @@ canvas {
   align-items: center;
   text-align: center;
 }
+
+.dashboard-cards .ant-card p {
+  font-size: 14px;
+  color: #333;
+}

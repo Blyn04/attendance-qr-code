@@ -3,6 +3,8 @@ import { Card, Col, Row, Tabs } from 'antd';
 import {
   ShoppingOutlined,
   BarChartOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons';
 import CustomDashboardCalendar from '../customs/CustomDashboardCalendar';
 import { collection, getDocs } from 'firebase/firestore';
@@ -86,7 +88,7 @@ const Dashboard = () => {
         <Row gutter={[16, 16]}>
           <Col>
             <Card bordered style={{ background: '#D6F5E3' }}>
-              <ShoppingOutlined style={{ fontSize: 28 }} />
+              <CalendarOutlined style={{ fontSize: 40, color: '#52c41a' }} />
               <h2>{eventCount}</h2>
               <p>Total Events</p>
             </Card>
@@ -94,9 +96,24 @@ const Dashboard = () => {
 
           <Col>
             <Card bordered style={{ background: '#FFF7E6' }}>
-              <BarChartOutlined style={{ fontSize: 28 }} />
-              <h2>{upcomingEvent?.title || 'N/A'}</h2>
-              <p>Upcoming Event</p>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <ClockCircleOutlined style={{ fontSize: 40, color: '#fa8c16', marginBottom: 8 }} />
+                <h2 style={{ margin: 0, fontWeight: 'bold' }}>{upcomingEvent?.title || 'No Event'}</h2>
+                {upcomingEvent ? (
+                  <div style={{ marginTop: 4 }}>
+                    <p style={{ margin: 0 }}>
+                      <span role="img" aria-label="calendar">📅</span>{' '}
+                      {dayjs(upcomingEvent.date).format('MMMM D, YYYY')}
+                    </p>
+                    <p style={{ margin: 0 }}>
+                      <span role="img" aria-label="location">📍</span>{' '}
+                      {upcomingEvent.room || 'Room not set'}
+                    </p>
+                  </div>
+                ) : (
+                  <p style={{ marginTop: 8 }}>No upcoming event</p>
+                )}
+              </div>
             </Card>
           </Col>
         </Row>
@@ -105,7 +122,6 @@ const Dashboard = () => {
       <Tabs defaultActiveKey="calendar">
         <TabPane tab="Calendar" key="calendar">
           <Card>
-            <h3>📅 Calendar</h3>
             <CustomDashboardCalendar />
           </Card>
         </TabPane>
