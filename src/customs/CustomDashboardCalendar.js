@@ -40,11 +40,16 @@ const CustomDashboardCalendar = () => {
     const dateKey = value.format('YYYY-MM-DD');
     const listData = eventsByDate[dateKey] || [];
 
+    const isPast = value.isBefore(dayjs().startOf('day'), 'day');
+
     return (
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         {listData.map((item, idx) => (
           <li key={idx}>
-            <Badge status={item.type} text={item.title} />
+            <Badge
+              status={isPast ? 'error' : 'success'} 
+              text={item.title}
+            />
           </li>
         ))}
       </ul>
