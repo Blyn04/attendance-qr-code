@@ -757,25 +757,31 @@ const AdminEvents = () => {
         {selectedRegistrant ? (
           <div>
             {(() => {
-              const defaultKeys = [
-                'fullName',
+              const orderedKeys = [
                 'email',
+                'fullName',
                 'year',
                 'section',
+                'dataPrivacyAgreement',
                 'photoConsent',
                 'videoConsent',
-                'dataPrivacyAgreement',
                 'submittedAt',
-                'photo',
-                'video',
               ];
 
-              const defaultFields = [];
-              const customFields = [];
+              const keyLabels = {
+                email: 'Email',
+                fullName: 'Name',
+                year: 'Year',
+                section: 'Section',
+                dataPrivacyAgreement: 'Data Privacy Agreement',
+                photoConsent: 'Photo Consent',
+                videoConsent: 'Video Consent',
+                submittedAt: 'Submitted',
+              };
 
-              // Extract and render default fields
-              Object.entries(selectedRegistrant).forEach(([key, value]) => {
-                if (key === 'firestoreId' || key === 'customAnswers') return;
+              const defaultFields = orderedKeys.map((key) => {
+                const value = selectedRegistrant[key];
+                if (value === undefined) return null;
 
                 let displayValue;
 
@@ -783,40 +789,27 @@ const AdminEvents = () => {
                   displayValue = value ? '✔️ Yes' : '❌ No';
                 } else if (Array.isArray(value)) {
                   displayValue = value.join(', ');
-                } else if (typeof value === 'object' && value !== null) {
-                  if ('seconds' in value && 'nanoseconds' in value) {
-                    displayValue = new Date(value.seconds * 1000).toLocaleString();
-
-                  } else {
-                    displayValue = JSON.stringify(value, null, 2);
-                  }
-
+                } else if (typeof value === 'object' && value !== null && 'seconds' in value) {
+                  displayValue = new Date(value.seconds * 1000).toLocaleString();
                 } else {
                   displayValue = value;
                 }
 
-                const formattedKey = key
-                  .replace(/([A-Z])/g, ' $1')
-                  .replace(/^./, str => str.toUpperCase());
-
-                if (defaultKeys.includes(key)) {
-                  defaultFields.push(
-                    <div key={key} style={{ marginBottom: 10 }}>
-                      <strong>{formattedKey}:</strong> {displayValue}
-                    </div>
-                  );
-                }
+                return (
+                  <div key={key} style={{ marginBottom: 10 }}>
+                    <strong>{keyLabels[key] || key}:</strong> {displayValue}
+                  </div>
+                );
               });
 
+              const customFields = [];
               if (
                 selectedRegistrant.customAnswers &&
-                typeof selectedRegistrant.customAnswers === 'object' &&
-                Object.keys(selectedRegistrant.customAnswers).length > 0
+                typeof selectedRegistrant.customAnswers === 'object'
               ) {
                 Object.entries(selectedRegistrant.customAnswers).forEach(([question, answer], index) => {
-                  const displayAnswer = typeof answer === 'boolean'
-                    ? (answer ? '✔️ Yes' : '❌ No')
-                    : answer;
+                  const displayAnswer =
+                    typeof answer === 'boolean' ? (answer ? '✔️ Yes' : '❌ No') : answer;
 
                   customFields.push(
                     <div key={index} style={{ marginBottom: 10 }}>
@@ -859,57 +852,52 @@ const AdminEvents = () => {
         {selectedAttendee ? (
           <div>
             {(() => {
-              const defaultKeys = [
-                'fullName',
+              const orderedKeys = [
                 'email',
+                'fullName',
                 'year',
                 'section',
                 'photoConsent',
                 'videoConsent',
-                'dataPrivacyAgreement',
-                'sendCopy',
-                // 'registrationId',
-                'submittedAt',
-                'timestamp',
               ];
 
-              const defaultFields = [];
-              const customFields = [];
+              const keyLabels = {
+                email: 'Email',
+                fullName: 'Full Name',
+                year: 'Year',
+                section: 'Section',
+                photoConsent: 'Photo Consent',
+                videoConsent: 'Video Consent',
+              };
 
-              Object.entries(selectedAttendee).forEach(([key, value]) => {
-                if (key === 'customAnswers') return;
+              const defaultFields = orderedKeys.map((key) => {
+                const value = selectedAttendee[key];
+                if (value === undefined) return null;
 
                 let displayValue;
-
                 if (typeof value === 'boolean') {
                   displayValue = value ? '✔️ Yes' : '❌ No';
-
                 } else if (typeof value === 'object' && value?.seconds) {
                   displayValue = new Date(value.seconds * 1000).toLocaleString();
-
                 } else {
                   displayValue = value;
                 }
 
-                const formattedKey = key
-                  .replace(/([A-Z])/g, ' $1')
-                  .replace(/^./, str => str.toUpperCase());
-
-                if (defaultKeys.includes(key)) {
-                  defaultFields.push(
-                    <div key={key} style={{ marginBottom: 10 }}>
-                      <strong>{formattedKey}:</strong> {displayValue}
-                    </div>
-                  );
-                }
+                return (
+                  <div key={key} style={{ marginBottom: 10 }}>
+                    <strong>{keyLabels[key]}:</strong> {displayValue}
+                  </div>
+                );
               });
 
+              const customFields = [];
               if (
                 selectedAttendee.customAnswers &&
                 typeof selectedAttendee.customAnswers === 'object'
               ) {
                 Object.entries(selectedAttendee.customAnswers).forEach(([question, answer], index) => {
-                  const displayAnswer = typeof answer === 'boolean' ? (answer ? '✔️ Yes' : '❌ No') : answer;
+                  const displayAnswer =
+                    typeof answer === 'boolean' ? (answer ? '✔️ Yes' : '❌ No') : answer;
 
                   customFields.push(
                     <div key={index} style={{ marginBottom: 10 }}>
