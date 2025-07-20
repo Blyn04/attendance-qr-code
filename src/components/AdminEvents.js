@@ -73,39 +73,57 @@ const AdminEvents = () => {
       return message.warning("No attendance records to export.");
     }
 
+    // ➡️  Fields you NEVER want in the export
+    const excludedFields = ['id', 'registrationId', 'regisId', 'submittedAt', 'timestamp'];
+
     const allKeys = new Set();
 
+    // Collect all keys except the excluded ones
     attendanceRecords.forEach(record => {
       Object.keys(record).forEach(key => {
-        if (key !== 'customAnswers') {
+        if (key !== 'customAnswers' && !excludedFields.includes(key)) {
           allKeys.add(key);
         }
       });
 
       if (record.customAnswers && typeof record.customAnswers === 'object') {
         Object.keys(record.customAnswers).forEach(key => {
-          allKeys.add(key);
+          if (!excludedFields.includes(key)) {
+            allKeys.add(key);
+          }
         });
       }
     });
 
-    const columns = Array.from(allKeys);
+    // Put the main fields first
+    const priorityFields = ['fullName', 'email', 'year', 'section'];
+    const remainingFields = Array.from(allKeys)
+      .filter(key => !priorityFields.includes(key))
+      .sort();
 
+    const columns = [...priorityFields, ...remainingFields];
+
+    // Build row data
     const data = attendanceRecords.map(record => {
       const row = {};
 
       columns.forEach(key => {
+        // flat field
         if (record.hasOwnProperty(key)) {
-          if (typeof record[key] === 'object' && record[key]?.seconds) {
-            row[key] = new Date(record[key].seconds * 1000).toLocaleString();
-          } else if (typeof record[key] === 'boolean') {
-            row[key] = record[key] ? '✔️ Yes' : '❌ No';
+          const value = record[key];
+          if (typeof value === 'object' && value?.seconds) {
+            row[key] = new Date(value.seconds * 1000).toLocaleString();
+          } else if (typeof value === 'boolean') {
+            row[key] = value ? '✔️ Yes' : '❌ No';
           } else {
-            row[key] = record[key];
+            row[key] = value;
           }
+
+        // customAnswers field
         } else if (record.customAnswers?.hasOwnProperty(key)) {
           const value = record.customAnswers[key];
           row[key] = typeof value === 'boolean' ? (value ? '✔️ Yes' : '❌ No') : value;
+
         } else {
           row[key] = '';
         }
@@ -627,126 +645,125 @@ const AdminEvents = () => {
                 </div>
               )
             },
-          {
-  key: '4',
-  label: 'Analytics',
-  children: (() => {
-    const { yearCounts, sectionCounts } = getAnalytics();
+            {
+              key: '4',
+              label: 'Analytics',
+              children: (() => {
+                const { yearCounts, sectionCounts } = getAnalytics();
 
-    const yearData = Object.entries(yearCounts).map(([key, value]) => ({
-      name: key,
-      value,
-    }));
+                const yearData = Object.entries(yearCounts).map(([key, value]) => ({
+                  name: key,
+                  value,
+                }));
 
-    const sectionData = Object.entries(sectionCounts).map(([key, value]) => ({
-      name: key,
-      value,
-    }));
+                const sectionData = Object.entries(sectionCounts).map(([key, value]) => ({
+                  name: key,
+                  value,
+                }));
 
-    const total = registrations.length || 1;
+                const total = registrations.length || 1;
 
-    // Attendance breakdown
-    const attendanceYearCounts = {};
-    const attendanceSectionCounts = {};
+                // Attendance breakdown
+                const attendanceYearCounts = {};
+                const attendanceSectionCounts = {};
 
-    attendanceRecords.forEach((attendee) => {
-      const year = attendee.year || 'Unknown';
-      const section = attendee.section || 'Unknown';
+                attendanceRecords.forEach((attendee) => {
+                  const year = attendee.year || 'Unknown';
+                  const section = attendee.section || 'Unknown';
 
-      attendanceYearCounts[year] = (attendanceYearCounts[year] || 0) + 1;
-      attendanceSectionCounts[section] = (attendanceSectionCounts[section] || 0) + 1;
-    });
+                  attendanceYearCounts[year] = (attendanceYearCounts[year] || 0) + 1;
+                  attendanceSectionCounts[section] = (attendanceSectionCounts[section] || 0) + 1;
+                });
 
-    const attYearData = Object.entries(attendanceYearCounts).map(([key, value]) => ({
-      name: key,
-      value,
-    }));
+                const attYearData = Object.entries(attendanceYearCounts).map(([key, value]) => ({
+                  name: key,
+                  value,
+                }));
 
-    const attSectionData = Object.entries(attendanceSectionCounts).map(([key, value]) => ({
-      name: key,
-      value,
-    }));
+                const attSectionData = Object.entries(attendanceSectionCounts).map(([key, value]) => ({
+                  name: key,
+                  value,
+                }));
 
-    const totalAtt = attendanceRecords.length || 1;
+                const totalAtt = attendanceRecords.length || 1;
 
-    return (
-      <div style={{ maxHeight: 500, overflowY: 'auto' }}>
-        <h3>📊 Registration Analytics</h3>
+                return (
+                  <div style={{ maxHeight: 500, overflowY: 'auto' }}>
+                    <h3>📊 Registration Analytics</h3>
 
-        <h4>📚 By Section (Pie Chart)</h4>
-        <ResponsiveContainer width="100%" height={250}>
-          <PieChart>
-            <Pie
-              data={sectionData}
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="value"
-              label
-            >
-              {sectionData.map((_, index) => (
-                <Cell key={`section-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+                    <h4>📚 By Section (Pie Chart)</h4>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <PieChart>
+                        <Pie
+                          data={sectionData}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label
+                        >
+                          {sectionData.map((_, index) => (
+                            <Cell key={`section-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
 
-        <h4 style={{ marginTop: 32 }}>📈 By Year (Progress)</h4>
-        {yearData.map((item, index) => (
-          <div key={`year-${item.name}`} style={{ marginBottom: 10 }}>
-            <strong>{item.name}</strong>
-            <Progress
-              percent={((item.value / total) * 100).toFixed(1)}
-              strokeColor={COLORS[index % COLORS.length]}
-              format={(percent) => `${percent}%`}
-            />
-          </div>
-        ))}
+                    <h4 style={{ marginTop: 32 }}>📈 By Year (Progress)</h4>
+                    {yearData.map((item, index) => (
+                      <div key={`year-${item.name}`} style={{ marginBottom: 10 }}>
+                        <strong>{item.name}</strong>
+                        <Progress
+                          percent={((item.value / total) * 100).toFixed(1)}
+                          strokeColor={COLORS[index % COLORS.length]}
+                          format={(percent) => `${percent}%`}
+                        />
+                      </div>
+                    ))}
 
-        <hr style={{ margin: '40px 0' }} />
+                    <hr style={{ margin: '40px 0' }} />
 
-        <h3>🙋‍♂️ Attendance Analytics</h3>
+                    <h3>🙋‍♂️ Attendance Analytics</h3>
 
-        <h4>🧑‍🏫 By Section (Pie Chart)</h4>
-        <ResponsiveContainer width="100%" height={250}>
-          <PieChart>
-            <Pie
-              data={attSectionData}
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              fill="#82ca9d"
-              dataKey="value"
-              label
-            >
-              {attSectionData.map((_, index) => (
-                <Cell key={`att-section-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+                    <h4>🧑‍🏫 By Section (Pie Chart)</h4>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <PieChart>
+                        <Pie
+                          data={attSectionData}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#82ca9d"
+                          dataKey="value"
+                          label
+                        >
+                          {attSectionData.map((_, index) => (
+                            <Cell key={`att-section-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
 
-        <h4 style={{ marginTop: 32 }}>📅 By Year (Progress)</h4>
-        {attYearData.map((item, index) => (
-          <div key={`att-year-${item.name}`} style={{ marginBottom: 10 }}>
-            <strong>{item.name}</strong>
-            <Progress
-              percent={((item.value / totalAtt) * 100).toFixed(1)}
-              strokeColor={COLORS[index % COLORS.length]}
-              format={(percent) => `${percent}%`}
-            />
-          </div>
-        ))}
-      </div>
-    );
-  })(),
-},
-
+                    <h4 style={{ marginTop: 32 }}>📅 By Year (Progress)</h4>
+                    {attYearData.map((item, index) => (
+                      <div key={`att-year-${item.name}`} style={{ marginBottom: 10 }}>
+                        <strong>{item.name}</strong>
+                        <Progress
+                          percent={((item.value / totalAtt) * 100).toFixed(1)}
+                          strokeColor={COLORS[index % COLORS.length]}
+                          format={(percent) => `${percent}%`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                );
+              })(),
+            },
           ]}
         />
       </Modal>
