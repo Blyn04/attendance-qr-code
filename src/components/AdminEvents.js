@@ -58,6 +58,33 @@ const AdminEvents = () => {
     return () => unsub();
   }, []);
 
+  useEffect(() => {
+    if (!selectedEvent?.id) return;
+
+    // Live listener for registrations
+    const unsubRegistrations = onSnapshot(
+      collection(db, 'events', selectedEvent.id, 'registrations'),
+      (snapshot) => {
+        const regList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setRegistrations(regList);
+      }
+    );
+
+    // Live listener for attendance
+    const unsubAttendance = onSnapshot(
+      collection(db, 'events', selectedEvent.id, 'attendance'),
+      (snapshot) => {
+        const attList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setAttendanceRecords(attList);
+      }
+    );
+
+    return () => {
+      unsubRegistrations();
+      unsubAttendance();
+    };
+  }, [selectedEvent?.id]);
+
   const disablePastDates = (current) => {
     return current && current < dayjs().startOf('day');
   };
