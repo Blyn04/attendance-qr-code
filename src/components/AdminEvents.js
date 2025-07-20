@@ -39,7 +39,7 @@ const AdminEvents = () => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [selectedAttendee, setSelectedAttendee] = useState(null);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
-  const [eventFilter, setEventFilter] = useState('all'); // 'all' | 'past' | 'upcoming'
+  const [eventFilter, setEventFilter] = useState('all'); 
   const [form] = Form.useForm();
 
   const fetchEvents = async () => {
@@ -128,7 +128,6 @@ const AdminEvents = () => {
 
     const docPDF = new jsPDF({ orientation: 'portrait' });
 
-    // Fetch event details from 'events/{eventId}'
     let eventTitle = "Event";
     let eventDate = "";
     let eventRoom = "";
