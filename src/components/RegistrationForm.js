@@ -99,7 +99,8 @@ const RegistrationForm = () => {
 
       const fullPath = `/events/${eventId}/registrations/${docRef.id}`;
 
-      await fetch('http://localhost:3001/send-qr', {
+      // await fetch('http://localhost:3001/send-qr', {
+      await fetch('https://attendance-backend-5s2x.onrender.com/send-qr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
