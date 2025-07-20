@@ -7,7 +7,7 @@ import {
   ClockCircleOutlined,
 } from '@ant-design/icons';
 import CustomDashboardCalendar from '../customs/CustomDashboardCalendar';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/FirebaseConfig';
 import { Bar } from 'react-chartjs-2';
 import {
@@ -32,54 +32,124 @@ const Dashboard = () => {
   const [yearSectionData, setYearSectionData] = useState({});
   const [upcomingEvent, setUpcomingEvent] = useState(null);
 
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const snapshot = await getDocs(collection(db, 'events'));
+  //     const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  //     setEventCount(events.length);
+
+  //     const eventLabels = [];
+  //     const registrationsCount = [];
+  //     const yearBreakdown = {}; // { "Event Title": { "1st Year - INF123": 5, ... } }
+
+  //     for (const event of events) {
+  //       const regSnap = await getDocs(collection(db, 'events', event.id, 'registrations'));
+  //       eventLabels.push(event.title);
+  //       registrationsCount.push(regSnap.size);
+
+  //       const yearMap = {};
+  //       regSnap.docs.forEach(doc => {
+  //         const { year, section } = doc.data();
+  //         if (!year) return;
+  //         const label = `${year} - ${section || 'No Section'}`;
+  //         yearMap[label] = (yearMap[label] || 0) + 1;
+  //       });
+
+  //       yearBreakdown[event.title] = yearMap;
+  //     }
+
+  //     setChartData({
+  //       labels: eventLabels,
+  //       datasets: [
+  //         {
+  //           label: 'Registrations per Event',
+  //           data: registrationsCount,
+  //           backgroundColor: '#69c0ff',
+  //         },
+  //       ],
+  //     });
+
+  //     setYearSectionData(yearBreakdown);
+
+  //     // ✅ Find the upcoming event (nearest future date)
+  //     const upcoming = events
+  //       .filter(e => dayjs(e.date).isAfter(dayjs()))
+  //       .sort((a, b) => dayjs(a.date).diff(dayjs(b.date)))[0];
+
+  //     setUpcomingEvent(upcoming || null);
+  //   };
+
+  //   fetchData();
+  // }, []);
+
   useEffect(() => {
-    const fetchData = async () => {
-      const snapshot = await getDocs(collection(db, 'events'));
-      const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const unsubEvents = onSnapshot(collection(db, 'events'), (eventSnapshot) => {
+      const events = eventSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setEventCount(events.length);
 
       const eventLabels = [];
       const registrationsCount = [];
-      const yearBreakdown = {}; // { "Event Title": { "1st Year - INF123": 5, ... } }
+      const yearBreakdown = {};
+      const unsubRegistrations = [];
 
-      for (const event of events) {
-        const regSnap = await getDocs(collection(db, 'events', event.id, 'registrations'));
-        eventLabels.push(event.title);
-        registrationsCount.push(regSnap.size);
+      events.forEach(event => {
+        const regRef = collection(db, 'events', event.id, 'registrations');
 
-        const yearMap = {};
-        regSnap.docs.forEach(doc => {
-          const { year, section } = doc.data();
-          if (!year) return;
-          const label = `${year} - ${section || 'No Section'}`;
-          yearMap[label] = (yearMap[label] || 0) + 1;
+        const unsub = onSnapshot(regRef, (regSnap) => {
+          // Update stats per event in real-time
+          const regDocs = regSnap.docs;
+          const yearMap = {};
+          regDocs.forEach(doc => {
+            const { year, section } = doc.data();
+            if (!year) return;
+            const label = `${year} - ${section || 'No Section'}`;
+            yearMap[label] = (yearMap[label] || 0) + 1;
+          });
+
+          yearBreakdown[event.title] = yearMap;
+
+          // Update chart data
+          const matchingIndex = eventLabels.findIndex(label => label === event.title);
+          if (matchingIndex === -1) {
+            eventLabels.push(event.title);
+            registrationsCount.push(regDocs.length);
+          } else {
+            registrationsCount[matchingIndex] = regDocs.length;
+          }
+
+          setChartData({
+            labels: [...eventLabels],
+            datasets: [
+              {
+                label: 'Registrations per Event',
+                data: [...registrationsCount],
+                backgroundColor: '#69c0ff',
+              },
+            ],
+          });
+
+          setYearSectionData({ ...yearBreakdown });
         });
 
-        yearBreakdown[event.title] = yearMap;
-      }
-
-      setChartData({
-        labels: eventLabels,
-        datasets: [
-          {
-            label: 'Registrations per Event',
-            data: registrationsCount,
-            backgroundColor: '#69c0ff',
-          },
-        ],
+        unsubRegistrations.push(unsub);
       });
 
-      setYearSectionData(yearBreakdown);
-
-      // ✅ Find the upcoming event (nearest future date)
+      // Find upcoming event
       const upcoming = events
         .filter(e => dayjs(e.date).isAfter(dayjs()))
         .sort((a, b) => dayjs(a.date).diff(dayjs(b.date)))[0];
 
       setUpcomingEvent(upcoming || null);
-    };
 
-    fetchData();
+      // Cleanup function
+      return () => {
+        unsubRegistrations.forEach(unsub => unsub());
+      };
+    });
+
+    return () => {
+      unsubEvents();
+    };
   }, []);
 
   return (
