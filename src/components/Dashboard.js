@@ -32,56 +32,6 @@ const Dashboard = () => {
   const [yearSectionData, setYearSectionData] = useState({});
   const [upcomingEvent, setUpcomingEvent] = useState(null);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     const snapshot = await getDocs(collection(db, 'events'));
-  //     const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  //     setEventCount(events.length);
-
-  //     const eventLabels = [];
-  //     const registrationsCount = [];
-  //     const yearBreakdown = {}; // { "Event Title": { "1st Year - INF123": 5, ... } }
-
-  //     for (const event of events) {
-  //       const regSnap = await getDocs(collection(db, 'events', event.id, 'registrations'));
-  //       eventLabels.push(event.title);
-  //       registrationsCount.push(regSnap.size);
-
-  //       const yearMap = {};
-  //       regSnap.docs.forEach(doc => {
-  //         const { year, section } = doc.data();
-  //         if (!year) return;
-  //         const label = `${year} - ${section || 'No Section'}`;
-  //         yearMap[label] = (yearMap[label] || 0) + 1;
-  //       });
-
-  //       yearBreakdown[event.title] = yearMap;
-  //     }
-
-  //     setChartData({
-  //       labels: eventLabels,
-  //       datasets: [
-  //         {
-  //           label: 'Registrations per Event',
-  //           data: registrationsCount,
-  //           backgroundColor: '#69c0ff',
-  //         },
-  //       ],
-  //     });
-
-  //     setYearSectionData(yearBreakdown);
-
-  //     // ✅ Find the upcoming event (nearest future date)
-  //     const upcoming = events
-  //       .filter(e => dayjs(e.date).isAfter(dayjs()))
-  //       .sort((a, b) => dayjs(a.date).diff(dayjs(b.date)))[0];
-
-  //     setUpcomingEvent(upcoming || null);
-  //   };
-
-  //   fetchData();
-  // }, []);
-
   useEffect(() => {
     const unsubEvents = onSnapshot(collection(db, 'events'), (eventSnapshot) => {
       const events = eventSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -157,17 +107,25 @@ const Dashboard = () => {
       <div className="dashboard-cards">
         <Row gutter={[16, 16]}>
           <Col>
-            <Card bordered style={{ background: '#D6F5E3' }}>
-              <CalendarOutlined style={{ fontSize: 40, color: '#52c41a' }} />
+            <Card bordered style={{ background: '#0b4991ff' }}>
+              <div className="event-label">
+                <CalendarOutlined className="event-icon calendar-icon" />
+                <h3 className="event-text">Total Events</h3>
+              </div>
+
               <h2>{eventCount}</h2>
-              <p>Total Events</p>
             </Card>
           </Col>
 
           <Col>
-            <Card bordered style={{ background: '#FFF7E6' }}>
+            <Card bordered style={{ background: '#f7fa59ff' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <ClockCircleOutlined style={{ fontSize: 40, color: '#fa8c16', marginBottom: 8 }} />
+              
+                <div className="event-label1">
+                  <ClockCircleOutlined className="event-icon1" />
+                  <h3 className="event-text1">Upcoming Event</h3>
+                </div>
+
                 <h2 style={{ margin: 0, fontWeight: 'bold' }}>{upcomingEvent?.title || 'No Event'}</h2>
                 {upcomingEvent ? (
                   <div style={{ marginTop: 4 }}>
@@ -175,6 +133,7 @@ const Dashboard = () => {
                       <span role="img" aria-label="calendar">📅</span>{' '}
                       {dayjs(upcomingEvent.date).format('MMMM D, YYYY')}
                     </p>
+
                     <p style={{ margin: 0 }}>
                       <span role="img" aria-label="location">📍</span>{' '}
                       {upcomingEvent.room || 'Room not set'}
