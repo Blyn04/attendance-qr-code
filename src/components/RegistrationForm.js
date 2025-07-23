@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { db } from '../config/FirebaseConfig';
 import { collection, doc, getDoc, addDoc } from 'firebase/firestore';
+import { Select } from 'antd';
 import '../styles/RegistrationForm.css';
 import dayjs from 'dayjs';
 import logo from '../assets/jpcs.png';
+
+const { Option } = Select;
 
 const RegistrationForm = () => {
   const { eventId } = useParams();
@@ -305,6 +308,29 @@ const RegistrationForm = () => {
                   </label>
                 ))}
               </div>
+            ) : q.type === 'dropdown' ? (
+              <Select
+                id={fieldName}
+                name={fieldName}
+                value={value || undefined}
+                onChange={(val) =>
+                  handleChange({
+                    target: {
+                      name: fieldName,
+                      value: val,
+                    },
+                  })
+                }
+                placeholder="Select an option"
+                style={{ width: '100%' }}
+                className="form-select"
+              >
+                {(q.options || []).map((option, optIdx) => (
+                  <Option key={optIdx} value={option}>
+                    {option}
+                  </Option>
+                ))}
+              </Select>
             ) : (
               <input
                 type={q.type || 'text'}
