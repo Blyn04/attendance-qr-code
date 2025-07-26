@@ -108,16 +108,20 @@ const Login = () => {
         <h2 className="login-title">Login</h2>
         {error && <p className="error-text">{error}</p>}
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          required
-          onChange={(e) =>
-            setEmail(e.target.value.replace(/\s/g, ""))
-          }
-          disabled={loading}
-        />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            required
+            onChange={(e) => {
+              const noSpaces = e.target.value.replace(/\s/g, "");
+              setEmail(noSpaces);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === " ") e.preventDefault();
+            }}
+            disabled={loading}
+          />
 
         <div className="password-wrapper">
           <input
@@ -125,9 +129,13 @@ const Login = () => {
             placeholder="Password"
             value={password}
             required
-            onChange={(e) =>
-              setPassword(e.target.value.replace(/\s/g, ""))
-            }
+            onChange={(e) => {
+              const noSpaces = e.target.value.replace(/\s/g, "");
+              setPassword(noSpaces);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === " ") e.preventDefault(); 
+            }}
             disabled={loading}
           />
           <span
@@ -165,9 +173,13 @@ const Login = () => {
                 type="email"
                 placeholder="Enter your email"
                 value={resetEmail}
-                onChange={(e) =>
-                  setResetEmail(e.target.value.replace(/\s/g, ""))
-                }
+                onChange={(e) => {
+                  const noSpaces = e.target.value.replace(/\s/g, "");
+                  setResetEmail(noSpaces);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === " ") e.preventDefault();
+                }}
                 required
               />
               <button type="submit">Send Reset Email</button>
